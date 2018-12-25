@@ -7,6 +7,7 @@ use log::LevelFilter;
 use pretty_env_logger::formatted_timed_builder;
 
 mod rr_xml;
+mod scripts;
 
 fn main() {
     formatted_timed_builder()

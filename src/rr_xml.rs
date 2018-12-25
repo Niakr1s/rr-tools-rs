@@ -1,39 +1,39 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
+use roxmltree::{self, Document};
 
-use roxmltree::Document;
+use super::scripts::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
 #[derive(Debug)]
 pub struct RrXml {
-    t: String,
-    is_kpt: bool,
+    typ: String,
     number: String,
     parcels: Vec<Parcel>,
 }
 
 impl RrXml {
     pub fn from_file(filename: &str) -> Result<RrXml, ()> {
-        let mut f = File::open(filename).unwrap(); // todo
-        let mut file_content = String::new();
-        f.read_to_string(&mut file_content);
+        let file_content = match file_to_string(filename) {
+            Ok(fc) => fc,
+            Err(_) => return Err(()),
+        };
 
-        RrXml::parse(&file_content)
+        match RrXml::from_str(&file_content) {
+            Ok(rr_xml) => return Ok(rr_xml),
+            Err(_) => return Err(()),
+        }
     }
 
-    pub fn from_str(input: &str) -> Result<RrXml, ()> {
+    pub fn from_str(input: &str) -> Result<RrXml, roxmltree::Error> {
         RrXml::parse(input)
     }
 
-    fn parse(input: &str) -> Result<RrXml, ()> {
-        let number = String::new();
+    fn parse(input: &str) -> Result<RrXml, roxmltree::Error> {
         let mut parcels: Vec<Parcel> = Vec::new();
 
-        let root = Document::parse(input).unwrap();
+        let root = Document::parse(input)?;
 
-        let t = root.root_element().tag_name().name().to_string();
+        let typ = root.root_element().tag_name().name().to_string();
 
         let number = root
             .descendants()
@@ -42,7 +42,6 @@ impl RrXml {
             .attribute(CADASTRAL_NUMBER)
             .unwrap()
             .to_string();
-        let is_kpt = is_kpt(&number);
 
         for d in root.descendants() {
             if !d.is_element() {
@@ -58,61 +57,64 @@ impl RrXml {
                         c.add(p);
                     }
                 }
-                let cad_number = get_parent_cadastral_number(d);
+                let (typ, cad_number) = get_parent_type_and_number(d);
                 match parcels.iter_mut().find(|p| p.name == cad_number) {
                     Some(parcel) => {
-                        info!("{:?}: adding contur: {:?}", parcel.name, c);
+                        trace!("'{} {}': adding contur: {:?}", parcel.typ, parcel.name, c);
                         parcel.add_contur(c);
                     }
                     None => {
-                        let mut p = Parcel::new(&cad_number);
+                        let mut p = Parcel::new(typ, cad_number);
                         p.add_contur(c);
-                        info!("{:?}: pushing with conturs: {:?}", p.name, p.conturs,);
+                        trace!(
+                            "'{} {}': pushing with conturs: {:?}",
+                            p.typ,
+                            p.name,
+                            p.conturs,
+                        );
                         parcels.push(p);
                     }
                 }
             }
         }
 
-        Ok(RrXml {
-            t,
-            is_kpt,
+        let res = RrXml {
+            typ,
             number,
             parcels,
-        })
+        };
+
+        info!("{:?}", res);
+
+        Ok(res)
+    }
+
+    pub fn is_kpt(&self) -> bool {
+        if self.number.split(":").collect::<Vec<&str>>().len() == 3 {
+            return true;
+        }
+        false
     }
 }
 
-fn get_parent_cadastral_number(node: roxmltree::Node<'_, '_>) -> String {
+fn get_parent_type_and_number(node: roxmltree::Node<'_, '_>) -> (String, String) {
     match node.attribute(CADASTRAL_NUMBER) {
-        Some(attr) => attr.to_string(),
-        None => get_parent_cadastral_number(node.parent().unwrap()),
+        Some(attr) => (node.tag_name().name().to_string(), attr.to_string()),
+        None => get_parent_type_and_number(node.parent().unwrap()),
     }
-}
-
-fn rr_xml_name_from_str(n: String) -> Name {
-    let l = n.split(":").collect::<Vec<&str>>().len();
-    if l == 3 {
-        return Name::Kpt(n);
-    }
-    Name::NonKpt(n)
-}
-
-#[derive(Debug)]
-enum Name {
-    Kpt(String),
-    NonKpt(String),
 }
 
 #[derive(Debug)]
 struct Parcel {
+    typ: String,
     name: String,
     conturs: Vec<Contur>,
 }
 
 impl Parcel {
-    fn new(name: &str) -> Parcel {
+    fn new(typ: String, name: String) -> Parcel {
         Parcel {
+            typ: typ.to_string(),
             name: name.to_string(),
             conturs: vec![],
         }
@@ -137,6 +139,25 @@ impl Contur {
 }
 
 #[derive(Debug)]
+enum Entity {
+    Point,
+    Circle,
+}
+
+#[derive(Debug)]
+struct Circle {
+    x: f64,
+    y: f64,
+    r: f64,
+}
+
+impl Circle {
+    fn new(x: f64, y: f64, r: f64) -> Circle {
+        Circle { x, y, r }
+    }
+}
+
+#[derive(Debug)]
 struct Point {
     x: f64,
     y: f64,
@@ -146,13 +167,6 @@ impl Point {
     fn new(x: f64, y: f64) -> Point {
         Point { x, y }
     }
-}
-
-fn is_kpt(s: &str) -> bool {
-    if s.split(":").collect::<Vec<&str>>().len() == 3 {
-        return true;
-    }
-    false
 }
 
 #[cfg(test)]
@@ -166,7 +180,9 @@ mod test {
     fn cadastral_number_is_true() {
         let rr = RrXml::from_file(KPT).unwrap();
         assert_eq!(rr.number, "77:03:0009007");
+        assert_eq!(rr.typ, "KPT");
         let rr = RrXml::from_file(KVZU).unwrap();
         assert_eq!(rr.number, "21:01:010206:115");
+        assert_eq!(rr.typ, "KVZU");
     }
 }

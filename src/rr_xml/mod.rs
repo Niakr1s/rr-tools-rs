@@ -1,3 +1,5 @@
+use std::cmp::PartialEq;
+
 use roxmltree::{self, Document};
 
 use super::scripts::*;
@@ -51,13 +53,11 @@ impl RrXml {
                 let mut c = Contur::new();
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
-                        let x = p.attribute("X").unwrap().parse::<f64>().unwrap();
-                        let y = p.attribute("Y").unwrap().parse::<f64>().unwrap();
-                        let p = Point::new(x, y);
+                        let p = get_geopoint_from_node(&p);
                         c.add(p);
                     }
                 }
-                let (typ, cad_number) = get_parent_type_and_number(d);
+                let (typ, cad_number) = get_parent_type_and_number(&d);
                 match parcels.iter_mut().find(|p| p.name == cad_number) {
                     Some(parcel) => {
                         trace!("'{} {}': adding contur: {:?}", parcel.typ, parcel.name, c);
@@ -97,10 +97,10 @@ impl RrXml {
     }
 }
 
-fn get_parent_type_and_number(node: roxmltree::Node<'_, '_>) -> (String, String) {
+fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {
     match node.attribute(CADASTRAL_NUMBER) {
         Some(attr) => (node.tag_name().name().to_string(), attr.to_string()),
-        None => get_parent_type_and_number(node.parent().unwrap()),
+        None => get_parent_type_and_number(&node.parent().unwrap()),
     }
 }
 
@@ -126,63 +126,58 @@ impl Parcel {
 
 #[derive(Debug)]
 struct Contur {
-    points: Vec<Point>,
+    points: Vec<GeoPoint>,
 }
 
 impl Contur {
     fn new() -> Contur {
         Contur { points: vec![] }
     }
-    fn add(&mut self, p: Point) {
+    fn add(&mut self, p: GeoPoint) {
         self.points.push(p)
     }
 }
 
 #[derive(Debug)]
-enum Entity {
-    Point,
-    Circle,
+enum GeoPoint {
+    Point { x: f64, y: f64 },
+    Circle { x: f64, y: f64, r: f64 },
 }
 
-#[derive(Debug)]
-struct Circle {
-    x: f64,
-    y: f64,
-    r: f64,
-}
-
-impl Circle {
-    fn new(x: f64, y: f64, r: f64) -> Circle {
-        Circle { x, y, r }
+fn get_geopoint_from_node(node: &roxmltree::Node<'_, '_>) -> GeoPoint {
+    let x = node.attribute("X").unwrap().parse::<f64>().unwrap();
+    let y = node.attribute("Y").unwrap().parse::<f64>().unwrap();
+    for sibling in node.next_siblings() {
+        if sibling.tag_name().name() == "R" {
+            let r = sibling.text().unwrap().parse::<f64>().unwrap();
+            return GeoPoint::Circle { x, y, r };
+        }
     }
+    GeoPoint::Point { x, y }
 }
 
-#[derive(Debug)]
-struct Point {
-    x: f64,
-    y: f64,
-}
-
-impl Point {
-    fn new(x: f64, y: f64) -> Point {
-        Point { x, y }
+impl PartialEq for GeoPoint {
+    fn eq(&self, other: &GeoPoint) -> bool {
+        match (self, other) {
+            (GeoPoint::Point { x: x1, y: y1 }, GeoPoint::Point { x: x2, y: y2 }) => {
+                x1 == x2 && y1 == y2
+            }
+            (
+                GeoPoint::Circle {
+                    x: x1,
+                    y: y1,
+                    r: r1,
+                },
+                GeoPoint::Circle {
+                    x: x2,
+                    y: y2,
+                    r: r2,
+                },
+            ) => x1 == x2 && y1 == y2 && r1 == r2,
+            _ => false,
+        }
     }
 }
 
 #[cfg(test)]
-mod test {
-    use super::*;
-
-    const KVZU: &str = "KVZU Parcel 21 01 010206 115.xml";
-    const KPT: &str = "KPT CadastralBlock 77 03 0009007.xml";
-
-    #[test]
-    fn cadastral_number_is_true() {
-        let rr = RrXml::from_file(KPT).unwrap();
-        assert_eq!(rr.number, "77:03:0009007");
-        assert_eq!(rr.typ, "KPT");
-        let rr = RrXml::from_file(KVZU).unwrap();
-        assert_eq!(rr.number, "21:01:010206:115");
-        assert_eq!(rr.typ, "KVZU");
-    }
-}
+mod test;

@@ -13,42 +13,43 @@ const CIRCLE_STR: &str = r#"<SpelementUnit TypeUnit="Окружность" SuNmb
                                 </SpelementUnit>"#;
 
 #[test]
-fn get_geopoint_from_node_point() {
+fn get_point_from_node_point() {
     let doc = Document::parse(POINT_STR).unwrap();
     println!("{:?}", doc);
 
-    let mut geopoint = None;
+    let mut point = None;
 
     for p in doc.descendants() {
         if p.tag_name().name() == "Ordinate" {
-            geopoint = Some(get_geopoint_from_node(&p));
+            point = Some(get_point_from_node(&p));
         }
     }
 
     assert_eq!(
-        geopoint.unwrap(),
-        GeoPoint::Point {
+        point.unwrap(),
+        Point {
             x: 410328.96,
-            y: 1230548.8
+            y: 1230548.8,
+            r: 0.,
         }
     )
 }
 
 #[test]
-fn get_geopoint_from_node_circle() {
+fn get_point_from_node_circle() {
     let doc = Document::parse(CIRCLE_STR).unwrap();
 
-    let mut geopoint = None;
+    let mut point = None;
 
     for p in doc.descendants() {
         if p.tag_name().name() == "Ordinate" {
-            geopoint = Some(get_geopoint_from_node(&p));
+            point = Some(get_point_from_node(&p));
         }
     }
 
     assert_eq!(
-        geopoint.unwrap(),
-        GeoPoint::Circle {
+        point.unwrap(),
+        Point {
             x: 410328.96,
             y: 1230548.8,
             r: 0.5,
@@ -64,4 +65,37 @@ fn cadastral_number_is_true() {
     let rr = RrXml::from_file(KVZU).unwrap();
     assert_eq!(rr.number, "21:01:010206:115");
     assert_eq!(rr.typ, "KVZU");
+}
+
+#[test]
+fn point_is_circle_or_point() {
+    let p1 = Point {
+        x: 1.,
+        y: 2.,
+        r: 1.,
+    };
+    assert!(p1.is_circle());
+    assert!(!p1.is_point());
+    let p2 = Point {
+        x: 1.,
+        y: 2.,
+        r: 0.,
+    };
+    assert!(p2.is_point());
+    assert!(!p2.is_circle());
+}
+
+#[test]
+fn point_partial_eq() {
+    let p1 = Point {
+        x: 1.,
+        y: 1.,
+        r: 1.,
+    };
+    let p2 = Point {
+        x: 1.,
+        y: 1.,
+        r: 1.,
+    };
+    assert!(p1 == p2);
 }

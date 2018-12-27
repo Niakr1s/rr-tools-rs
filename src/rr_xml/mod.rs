@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod test;
+
 use std::cmp::PartialEq;
 
 use roxmltree::{self, Document};
@@ -53,7 +56,7 @@ impl RrXml {
                 let mut c = Contur::new();
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
-                        let p = get_geopoint_from_node(&p);
+                        let p = get_point_from_node(&p);
                         c.add(p);
                     }
                 }
@@ -126,58 +129,48 @@ impl Parcel {
 
 #[derive(Debug)]
 struct Contur {
-    points: Vec<GeoPoint>,
+    points: Vec<Point>,
 }
 
 impl Contur {
     fn new() -> Contur {
         Contur { points: vec![] }
     }
-    fn add(&mut self, p: GeoPoint) {
+    fn add(&mut self, p: Point) {
         self.points.push(p)
     }
 }
 
 #[derive(Debug)]
-enum GeoPoint {
-    Point { x: f64, y: f64 },
-    Circle { x: f64, y: f64, r: f64 },
+struct Point {
+    x: f64,
+    y: f64,
+    r: f64,
 }
 
-fn get_geopoint_from_node(node: &roxmltree::Node<'_, '_>) -> GeoPoint {
+impl Point {
+    fn is_circle(&self) -> bool {
+        self.r != 0.
+    }
+    fn is_point(&self) -> bool {
+        self.r == 0.
+    }
+}
+
+impl PartialEq for Point {
+    fn eq(&self, other: &Point) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
+fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Point {
     let x = node.attribute("X").unwrap().parse::<f64>().unwrap();
     let y = node.attribute("Y").unwrap().parse::<f64>().unwrap();
+    let mut r = 0.;
     for sibling in node.next_siblings() {
         if sibling.tag_name().name() == "R" {
-            let r = sibling.text().unwrap().parse::<f64>().unwrap();
-            return GeoPoint::Circle { x, y, r };
+            r = sibling.text().unwrap().parse::<f64>().unwrap();
         }
     }
-    GeoPoint::Point { x, y }
+    Point { x, y, r }
 }
-
-impl PartialEq for GeoPoint {
-    fn eq(&self, other: &GeoPoint) -> bool {
-        match (self, other) {
-            (GeoPoint::Point { x: x1, y: y1 }, GeoPoint::Point { x: x2, y: y2 }) => {
-                x1 == x2 && y1 == y2
-            }
-            (
-                GeoPoint::Circle {
-                    x: x1,
-                    y: y1,
-                    r: r1,
-                },
-                GeoPoint::Circle {
-                    x: x2,
-                    y: y2,
-                    r: r2,
-                },
-            ) => x1 == x2 && y1 == y2 && r1 == r2,
-            _ => false,
-        }
-    }
-}
-
-#[cfg(test)]
-mod test;

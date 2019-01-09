@@ -1,4 +1,4 @@
-use crate::rr_xml::Point;
+use crate::rr_xml::{Contur, Point};
 
 fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
     /* Returns True if intersect else False
@@ -93,6 +93,75 @@ fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
         return true;
     };
     false
+}
+
+fn inside_polygon(p: &Point, c: &Contur) -> bool {
+    if !c.is_closed() {
+        return false;
+    };
+    let n = c.points.len();
+    let mut inside = false;
+    let mut p1 = &c.points[0];
+    for i in 1..=n {
+        let p2 = &c.points[i % n];
+        if p.y > p1.y.min(p2.y) {
+            if p.y <= p1.y.max(p2.y) {
+                if p.x <= p1.x.max(p2.x) {
+                    if p1.y != p2.y {
+                        let xinters = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
+                        if p.x <= xinters {
+                            inside = !inside;
+                        }
+                    };
+                    if p1.x == p2.x {
+                        inside = !inside;
+                    };
+                }
+            }
+        }
+        p1 = &p2;
+    }
+
+    inside
+}
+
+fn circle_intersect(
+    &Point {
+        x: x0,
+        y: y0,
+        r: radius,
+    }: &Point,
+    &Point { x: x1, y: y1, .. }: &Point,
+    &Point { x: x2, y: y2, .. }: &Point,
+) -> bool {
+    /* algorithm:
+    http://pers.narod.ru/algorithms/pas_dist_from_point_to_line.html */
+
+    fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+        ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
+    }
+
+    let r1 = dist(x0, y0, x1, y1);
+    let r2 = dist(x0, y0, x2, y2);
+    let r12 = dist(x1, y1, x2, y2);
+    let res = if r1 >= dist(r2, r12, 0., 0.) {
+        r2
+    } else if r2 >= dist(r1, r12, 0., 0.) {
+        r1
+    } else {
+        let mut a = y2 - y1;
+        let mut b = x1 - x2;
+        let mut c = -x1 * (y2 - y1) + y1 * (x2 - x1);
+        let t = dist(a, b, 0., 0.);
+        if c > 0. {
+            a = -a;
+            b = -b;
+            c = -c;
+        }
+        (a * x0 + b * y0 + c) / t
+    }
+    .abs();
+    res <= radius
 }
 
 #[cfg(test)]

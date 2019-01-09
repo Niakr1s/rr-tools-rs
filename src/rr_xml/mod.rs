@@ -138,6 +138,17 @@ impl Contur {
     fn add(&mut self, p: Point) {
         self.points.push(p)
     }
+    fn is_closed(&self) -> bool {
+        match self.points.last() {
+            Some(l) => {
+                if self.points[0] != *l {
+                    return false;
+                }
+            }
+            None => return false,
+        };
+        true
+    }
 }
 
 #[derive(Debug, PartialEq)]

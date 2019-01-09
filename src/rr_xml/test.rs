@@ -30,7 +30,7 @@ fn get_point_from_node_point() {
         Point {
             x: 410328.96,
             y: 1230548.8,
-            r: 0.,
+            r: None,
         }
     )
 }
@@ -52,7 +52,7 @@ fn get_point_from_node_circle() {
         Point {
             x: 410328.96,
             y: 1230548.8,
-            r: 0.5,
+            r: Some(0.5),
         }
     )
 }
@@ -72,14 +72,14 @@ fn point_is_circle_or_point() {
     let p1 = Point {
         x: 1.,
         y: 2.,
-        r: 1.,
+        r: Some(1.),
     };
     assert!(p1.is_circle());
     assert!(!p1.is_point());
     let p2 = Point {
         x: 1.,
         y: 2.,
-        r: 0.,
+        r: None,
     };
     assert!(p2.is_point());
     assert!(!p2.is_circle());
@@ -90,12 +90,12 @@ fn point_partial_eq() {
     let p1 = Point {
         x: 1.,
         y: 1.,
-        r: 1.,
+        r: Some(1.),
     };
     let p2 = Point {
         x: 1.,
         y: 1.,
-        r: 1.,
+        r: Some(1.),
     };
     assert!(p1 == p2);
 }

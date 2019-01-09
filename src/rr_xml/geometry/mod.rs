@@ -141,6 +141,11 @@ fn circle_intersect(
         ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
     }
 
+    let radius = match radius {
+        Some(r) => r,
+        None => return false,
+    };
+
     let r1 = dist(x0, y0, x1, y1);
     let r2 = dist(x0, y0, x2, y2);
     let r12 = dist(x1, y1, x2, y2);

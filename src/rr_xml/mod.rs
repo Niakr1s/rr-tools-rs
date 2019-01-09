@@ -155,15 +155,21 @@ impl Contur {
 struct Point {
     x: f64,
     y: f64,
-    r: f64,
+    r: Option<f64>,
 }
 
 impl Point {
     fn is_circle(&self) -> bool {
-        self.r != 0.
+        match self.r {
+            Some(_) => true,
+            None => false,
+        }
     }
     fn is_point(&self) -> bool {
-        self.r == 0.
+        match self.r {
+            Some(_) => false,
+            None => true,
+        }
     }
 }
 
@@ -175,10 +181,10 @@ fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, ()> {
         (Ok(x), Ok(y)) => (x, y),
         _ => return Err(()),
     };
-    let mut r = 0.;
+    let mut r = None;
     for sibling in node.next_siblings() {
         if sibling.tag_name().name() == "R" {
-            r = sibling.text().unwrap().parse::<f64>().unwrap();
+            r = Some(sibling.text().unwrap().parse::<f64>().unwrap());
         }
     }
     let p = Point { x, y, r };

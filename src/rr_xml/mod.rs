@@ -1,5 +1,4 @@
-#[cfg(test)]
-mod test;
+mod geometry;
 
 use std::cmp::PartialEq;
 
@@ -56,7 +55,7 @@ impl RrXml {
                 let mut c = Contur::new();
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
-                        let p = get_point_from_node(&p);
+                        let p = get_point_from_node(&p).unwrap(); //todo handle possible error
                         c.add(p);
                     }
                 }
@@ -157,14 +156,23 @@ impl Point {
     }
 }
 
-fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Point {
-    let x = node.attribute("X").unwrap().parse::<f64>().unwrap();
-    let y = node.attribute("Y").unwrap().parse::<f64>().unwrap();
+fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, ()> {
+    let (x, y) = match (
+        node.attribute("X").unwrap().parse::<f64>(),
+        node.attribute("Y").unwrap().parse::<f64>(),
+    ) {
+        (Ok(x), Ok(y)) => (x, y),
+        _ => return Err(()),
+    };
     let mut r = 0.;
     for sibling in node.next_siblings() {
         if sibling.tag_name().name() == "R" {
             r = sibling.text().unwrap().parse::<f64>().unwrap();
         }
     }
-    Point { x, y, r }
+    let p = Point { x, y, r };
+    Ok(p)
 }
+
+#[cfg(test)]
+mod test;

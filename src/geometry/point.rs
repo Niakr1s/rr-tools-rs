@@ -1,3 +1,5 @@
+use dxf;
+
 #[derive(Debug, PartialEq)]
 pub struct Point {
     pub x: f64,
@@ -6,6 +8,9 @@ pub struct Point {
 }
 
 impl Point {
+    pub fn from_dxf_point(&dxf::Point { x: x, y: y, .. }: &dxf::Point) -> Point {
+        Point { x, y, r: None }
+    }
     pub fn is_circle(&self) -> bool {
         match self.r {
             Some(_) => true,

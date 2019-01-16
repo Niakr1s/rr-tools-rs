@@ -1,5 +1,5 @@
 use super::point::Point;
-use crate::rr_xml::Contur;
+use crate::rrxml::Contur;
 
 pub fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
     /* Returns True if intersect else False

@@ -57,9 +57,9 @@ impl RrXml {
                     }
                 }
                 let (typ, cad_number) = get_parent_type_and_number(&d);
-                match parcels.iter_mut().find(|p| p.name == cad_number) {
+                match parcels.iter_mut().find(|p| p.number == cad_number) {
                     Some(parcel) => {
-                        trace!("'{} {}': adding contur: {:?}", parcel.typ, parcel.name, c);
+                        trace!("'{} {}': adding contur: {:?}", parcel.typ, parcel.number, c);
                         parcel.add_contur(c);
                     }
                     None => {
@@ -68,7 +68,7 @@ impl RrXml {
                         trace!(
                             "'{} {}': pushing with conturs: {:?}",
                             p.typ,
-                            p.name,
+                            p.number,
                             p.conturs,
                         );
                         parcels.push(p);
@@ -107,15 +107,15 @@ fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String
 #[derive(Debug)]
 pub struct Parcel {
     typ: String,
-    name: String,
+    number: String,
     conturs: Vec<Contur>,
 }
 
 impl Parcel {
-    fn new(typ: String, name: String) -> Parcel {
+    fn new(typ: String, number: String) -> Parcel {
         Parcel {
             typ: typ.to_string(),
-            name: name.to_string(),
+            number: number.to_string(),
             conturs: vec![],
         }
     }

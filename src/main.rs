@@ -6,6 +6,7 @@ extern crate log;
 use log::LevelFilter;
 use pretty_env_logger::formatted_timed_builder;
 
+mod geometry;
 mod rr_xml;
 mod scripts;
 

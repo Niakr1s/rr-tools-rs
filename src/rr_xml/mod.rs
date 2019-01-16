@@ -1,9 +1,8 @@
-mod geometry;
-
 use std::cmp::PartialEq;
 
 use roxmltree::{self, Document};
 
+use super::geometry::point::Point;
 use super::scripts::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
@@ -106,7 +105,7 @@ fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String
 }
 
 #[derive(Debug)]
-struct Parcel {
+pub struct Parcel {
     typ: String,
     name: String,
     conturs: Vec<Contur>,
@@ -126,18 +125,18 @@ impl Parcel {
 }
 
 #[derive(Debug)]
-struct Contur {
-    points: Vec<Point>,
+pub struct Contur {
+    pub points: Vec<Point>,
 }
 
 impl Contur {
-    fn new() -> Contur {
+    pub fn new() -> Contur {
         Contur { points: vec![] }
     }
-    fn add(&mut self, p: Point) {
+    pub fn add(&mut self, p: Point) {
         self.points.push(p)
     }
-    fn is_closed(&self) -> bool {
+    pub fn is_closed(&self) -> bool {
         match self.points.last() {
             Some(l) => {
                 if self.points[0] != *l {
@@ -147,28 +146,6 @@ impl Contur {
             None => return false,
         };
         true
-    }
-}
-
-#[derive(Debug, PartialEq)]
-struct Point {
-    x: f64,
-    y: f64,
-    r: Option<f64>,
-}
-
-impl Point {
-    fn is_circle(&self) -> bool {
-        match self.r {
-            Some(_) => true,
-            None => false,
-        }
-    }
-    fn is_point(&self) -> bool {
-        match self.r {
-            Some(_) => false,
-            None => true,
-        }
     }
 }
 

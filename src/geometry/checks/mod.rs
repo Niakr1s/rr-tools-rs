@@ -1,6 +1,7 @@
-use crate::rr_xml::{Contur, Point};
+use super::point::Point;
+use crate::rr_xml::Contur;
 
-fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
+pub fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
     /* Returns True if intersect else False
     segment1 = (p1, q1), segment2 = (p2, q2),
     where p1,q1,p2,q2 - points like (x,y)->tuple, where x,y - coordinates */
@@ -95,7 +96,7 @@ fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
     false
 }
 
-fn inside_polygon(p: &Point, c: &Contur) -> bool {
+pub fn inside_polygon(p: &Point, c: &Contur) -> bool {
     if !c.is_closed() {
         return false;
     };

@@ -10,26 +10,24 @@ const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
 #[derive(Debug)]
 pub struct RrXml {
+    path: String,
     typ: String,
     number: String,
     parcels: Vec<Parcel>,
 }
 
 impl RrXml {
-    pub fn from_file(filename: &str) -> Result<RrXml, ()> {
-        let file_content = match file_to_string(filename) {
+    pub fn from_file(path: &str) -> Result<RrXml, ()> {
+        let file_content = match file_to_string(path) {
             Ok(fc) => fc,
             Err(_) => return Err(()),
         };
+        let path = path.to_string();
 
-        match RrXml::from_str(&file_content) {
-            Ok(rr_xml) => return Ok(rr_xml),
+        match RrXml::parse(&file_content) {
+            Ok(rr_xml) => return Ok(RrXml { path, ..rr_xml }),
             Err(_) => return Err(()),
         }
-    }
-
-    pub fn from_str(input: &str) -> Result<RrXml, roxmltree::Error> {
-        RrXml::parse(input)
     }
 
     fn parse(input: &str) -> Result<RrXml, roxmltree::Error> {
@@ -81,6 +79,7 @@ impl RrXml {
         }
 
         let res = RrXml {
+            path: String::new(),
             typ,
             number,
             parcels,

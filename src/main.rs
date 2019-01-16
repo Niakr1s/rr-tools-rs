@@ -1,5 +1,7 @@
 #[allow(unused_imports)]
+extern crate dxf;
 extern crate pretty_env_logger;
+
 #[macro_use]
 extern crate log;
 

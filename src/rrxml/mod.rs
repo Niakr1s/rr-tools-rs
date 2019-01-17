@@ -2,7 +2,7 @@ use std::cmp::PartialEq;
 
 use roxmltree::{self, Document};
 
-use super::geometry::point::Point;
+use super::geometry::entities::Point;
 use super::scripts::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";

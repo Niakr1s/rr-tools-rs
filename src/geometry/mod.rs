@@ -1,2 +1,2 @@
 pub mod checks;
-pub mod point;
+pub mod entities;

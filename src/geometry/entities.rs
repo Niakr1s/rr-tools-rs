@@ -38,3 +38,14 @@ impl Point {
         }
     }
 }
+
+pub struct Line {
+    start: Point,
+    end: Point,
+}
+
+impl Line {
+    pub fn from_points(start: Point, end: Point) -> Line {
+        Line {start, end}
+    }
+}

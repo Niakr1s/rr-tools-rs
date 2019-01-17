@@ -1,47 +1,66 @@
 use crate::geometry::entities::*;
-// use dxf::entities::*;
 use dxf::entities::{self, EntityType};
 use dxf::{Drawing, DxfResult};
 
+#[derive(Debug, PartialEq)]
 enum Entity {
     Contur(Contur),
-    Line(Line),
     Point(Point),
 }
 
+#[derive(Debug)]
 pub struct MyDxf {
     path: String,
-    drawing: Drawing,
     entities: Vec<Entity>,
 }
 
 impl MyDxf {
     pub fn from_file(path: &str) -> DxfResult<MyDxf> {
-        let drawing = Drawing::load_file(path)?;
+        info!("{}: creating MyDxf...", path);
         let path = path.to_string();
-        let entities = vec![];
-        Ok(MyDxf {
-            path,
-            drawing,
-            entities,
-        })
+        let drawing = Drawing::load_file(&path)?;
+        let entities = drawing_to_entities(drawing);
+        info!("{}: MyDxf created", path);
+
+        Ok(MyDxf { path, entities })
     }
 }
 
-fn drawing_to_entities(drawing: &Drawing) -> Vec<Entity> {
+fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
     let mut entities = vec![];
-    // for e in drawing.entities.as_ref() {
-    //     // match e.specific {
-    //     //     EntityType::LwPolyline(lw_polyline) => {
-    //     //         for
-    //     //     }
-    //     //     // entities::Polyline => {}
-    //     //     // entities::Line => {}
-    //     //     // entities::Circle => {}
-    //     //     // entitites::ModelPoint => {}
-    //     //     _ => (),
-    //     // }
-    // }
+    for e in drawing.entities {
+        let contur = match e.specific {
+            EntityType::LwPolyline(lw_polyline) => {
+                let mut contur = Contur::new();
+                for p in lw_polyline.vertices {
+                    contur.add(Point::new(p.x, p.y, None));
+                }
+                Entity::Contur(contur)
+            }
+            EntityType::Polyline(polyline) => {
+                let mut contur = Contur::new();
+                for p in polyline.vertices {
+                    contur.add(Point::from_dxf_point(&p.location));
+                }
+                Entity::Contur(contur)
+            }
+            EntityType::Line(line) => {
+                let mut contur = Contur::new();
+                let p1 = Point::from_dxf_point(&line.p1);
+                let p2 = Point::from_dxf_point(&line.p2);
+                contur.add(p1);
+                contur.add(p2);
+                Entity::Contur(contur)
+            }
+            EntityType::Circle(circle) => Entity::Point(Point::from_dxf_circle(&circle)),
+            EntityType::ModelPoint(model_point) => {
+                Entity::Point(Point::from_dxf_point(&model_point.location))
+            }
+            _ => continue,
+        };
+        entities.push(contur);
+    }
+    info!("{:?}", entities);
     entities
 }
 

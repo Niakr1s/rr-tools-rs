@@ -1,7 +1,7 @@
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -9,28 +9,33 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn from_dxf_point(&DxfPoint { x, y, .. }: &DxfPoint) -> Point {
-        Point { x, y, r: None }
+    pub fn new(x: f64, y: f64, r: Option<f64>) -> Point {
+        Point { x, y, r }
     }
-    pub fn from_dxf_circle(
-        DxfCircle {
-            center: dxf_point,
-            radius,
-            ..
-        }: &DxfCircle,
-    ) -> Point {
-        let p = Point::from_dxf_point(&dxf_point);
+
+    pub fn from_dxf_point(DxfPoint { x, y, .. }: &DxfPoint) -> Point {
+        Point {
+            x: *x,
+            y: *y,
+            r: None,
+        }
+    }
+
+    pub fn from_dxf_circle(DxfCircle { center, radius, .. }: &DxfCircle) -> Point {
+        let p = Point::from_dxf_point(&center);
         Point {
             r: Some(*radius),
             ..p
         }
     }
+
     pub fn is_circle(&self) -> bool {
         match self.r {
             Some(_) => true,
             None => false,
         }
     }
+
     pub fn is_point(&self) -> bool {
         match self.r {
             Some(_) => false,

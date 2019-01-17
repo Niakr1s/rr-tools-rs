@@ -39,6 +39,7 @@ impl Point {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Line {
     start: Point,
     end: Point,
@@ -46,6 +47,31 @@ pub struct Line {
 
 impl Line {
     pub fn from_points(start: Point, end: Point) -> Line {
-        Line {start, end}
+        Line { start, end }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Contur {
+    pub points: Vec<Point>,
+}
+
+impl Contur {
+    pub fn new() -> Contur {
+        Contur { points: vec![] }
+    }
+    pub fn add(&mut self, p: Point) {
+        self.points.push(p)
+    }
+    pub fn is_closed(&self) -> bool {
+        match self.points.last() {
+            Some(l) => {
+                if self.points[0] != *l {
+                    return false;
+                }
+            }
+            None => return false,
+        };
+        true
     }
 }

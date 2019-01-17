@@ -2,7 +2,7 @@ use std::cmp::PartialEq;
 
 use roxmltree::{self, Document};
 
-use super::geometry::entities::Point;
+use super::geometry::entities::*;
 use super::scripts::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
@@ -121,31 +121,6 @@ impl Parcel {
     }
     fn add_contur(&mut self, c: Contur) {
         self.conturs.push(c);
-    }
-}
-
-#[derive(Debug)]
-pub struct Contur {
-    pub points: Vec<Point>,
-}
-
-impl Contur {
-    pub fn new() -> Contur {
-        Contur { points: vec![] }
-    }
-    pub fn add(&mut self, p: Point) {
-        self.points.push(p)
-    }
-    pub fn is_closed(&self) -> bool {
-        match self.points.last() {
-            Some(l) => {
-                if self.points[0] != *l {
-                    return false;
-                }
-            }
-            None => return false,
-        };
-        true
     }
 }
 

@@ -1,27 +1,48 @@
-use crate::geometry::entities::{Line, Point};
-use dxf::entities::*;
+use crate::geometry::entities::*;
+// use dxf::entities::*;
+use dxf::entities::{self, EntityType};
 use dxf::{Drawing, DxfResult};
+
+enum Entity {
+    Contur(Contur),
+    Line(Line),
+    Point(Point),
+}
 
 pub struct MyDxf {
     path: String,
     drawing: Drawing,
-    lines: Vec<Line>,
-    points: Vec<Point>,
+    entities: Vec<Entity>,
 }
 
 impl MyDxf {
     pub fn from_file(path: &str) -> DxfResult<MyDxf> {
         let drawing = Drawing::load_file(path)?;
         let path = path.to_string();
-        let lines = vec![];
-        let points = vec![];
+        let entities = vec![];
         Ok(MyDxf {
             path,
             drawing,
-            lines,
-            points,
+            entities,
         })
     }
+}
+
+fn drawing_to_entities(drawing: &Drawing) -> Vec<Entity> {
+    let mut entities = vec![];
+    // for e in drawing.entities.as_ref() {
+    //     // match e.specific {
+    //     //     EntityType::LwPolyline(lw_polyline) => {
+    //     //         for
+    //     //     }
+    //     //     // entities::Polyline => {}
+    //     //     // entities::Line => {}
+    //     //     // entities::Circle => {}
+    //     //     // entitites::ModelPoint => {}
+    //     //     _ => (),
+    //     // }
+    // }
+    entities
 }
 
 #[cfg(test)]

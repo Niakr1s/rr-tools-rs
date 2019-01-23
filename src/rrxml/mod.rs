@@ -8,14 +8,17 @@ use std::io;
 use std::io::Read;
 use std::error::Error;
 use crate::error::MyError;
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::fmt;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
 #[derive(Debug)]
 pub struct RrXml {
-    path: String,
-    typ: String,
-    number: String,
+    pub path: String,
+    pub typ: String,
+    pub number: String,
     pub parcels: Vec<Parcel>,
 }
 
@@ -83,7 +86,9 @@ impl RrXml {
             parcels,
         };
 
-        info!("{:?}", res);
+        debug!("{:?}", res);
+
+
 
         Ok(res)
     }
@@ -95,10 +100,29 @@ impl RrXml {
         false
     }
 
+    /// It's simple, kpt is usually the last in xml file
+    pub fn get_kpt_parcel(&self) -> Option<&Parcel> {
+        if !self.is_kpt() { return None };
+        self.parcels.last()
+    }
+
     pub fn len(&self) -> usize {
         self.parcels.len()
     }
 
+}
+
+impl Display for RrXml {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "Got {typ}:{number} from '{path}'",
+            path = self.path, typ = self.typ, number = self.number,
+        )?;
+        writeln!(f, "with parcels:")?;
+        for p in &self.parcels {
+            writeln!(f, "\t{}", p.number)?;
+        };
+        writeln!(f, "")
+    }
 }
 
 fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {

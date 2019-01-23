@@ -19,12 +19,19 @@ fn main() {
         .filter_level(LevelFilter::Info)
         .init();
 
-    let rr = rrxml::RrXml::from_file("test_xmls/KPT CadastralBlock 77 03 0009007.xml");
+    let rr =
+        rrxml::RrXml::from_file(r"test_xmls\KPT CadastralBlock 77 03 0009007.xml")
+            .unwrap();
+    println!("{}", rr);
+    let p = rr.get_kpt_parcel();
+    println!("got parcel: {:?}", p);
     println!();
     println!();
     println!();
     println!();
     println!();
-    let rr = rrxml::RrXml::from_file("test_xmls/KVZU Parcel 21 01 010206 115.xml");
-    // println!("{:#?}", rr);
+    let rr =
+        rrxml::RrXml::from_file(r"test_xmls\KVZU Parcel 21 01 010206 115.xml")
+            .unwrap();
+    println!("{}", rr);
 }

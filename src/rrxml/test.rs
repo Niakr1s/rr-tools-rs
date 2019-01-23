@@ -67,6 +67,17 @@ fn cadastral_number_is_true() {
 }
 
 #[test]
+fn get_kpt_parcel_ok() {
+    let rr = RrXml::from_file(KPT).unwrap();
+    assert!(rr.is_kpt());
+    let p = rr.get_kpt_parcel();
+    match p {
+        Some(p) => assert_eq!(p.number, "77:03:0009007"),
+        None => panic!("xml is not empty!"),
+    }
+}
+
+#[test]
 fn point_is_circle_or_point() {
     let p1 = Point {
         x: 1.,

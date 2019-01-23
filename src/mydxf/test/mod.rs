@@ -1,5 +1,7 @@
 use super::*;
 
+/// In this test module result should be with reversed coordinates
+
 const P1: Point = Point {
     x: 1.5,
     y: 1.5,
@@ -11,8 +13,8 @@ const P2: Point = Point {
     r: None,
 };
 const P3: Point = Point {
-    x: 2.0,
-    y: -3.0,
+    x: -3.0,
+    y: 2.0,
     r: None,
 };
 

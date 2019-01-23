@@ -1,4 +1,4 @@
-use crate::mydxf::MyDxf;
+use crate::mydxf::{MyDxf, Entity};
 use crate::rrxml::{RrXml, Parcel};
 
 fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
@@ -16,7 +16,12 @@ fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
 }
 
 fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
-
+//    for entity in &mydxf.entities {
+//        match entity {
+//            Entity::Contur(contur) -> ,
+//            Entity::Point(point) ->
+//        }
+//    }
 
     unimplemented!()
 }

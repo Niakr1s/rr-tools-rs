@@ -13,10 +13,11 @@ impl Point {
         Point { x, y, r }
     }
 
+    // should be reversed
     pub fn from_dxf_point(DxfPoint { x, y, .. }: &DxfPoint) -> Point {
         Point {
-            x: *x,
-            y: *y,
+            x: *y,
+            y: *x,
             r: None,
         }
     }
@@ -80,3 +81,62 @@ impl Contur {
         true
     }
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Rect {
+    pub xmax: f64,
+    pub ymax: f64,
+    pub xmin: f64,
+    pub ymin: f64,
+    empty: bool,
+}
+
+impl Rect {
+    pub fn new() -> Rect {
+        Rect {
+            xmax: 0.,
+            ymax: 0.,
+            xmin: 0.,
+            ymin: 0.,
+            empty: true,
+        }
+    }
+
+    pub fn from(xmax: f64, ymax: f64, xmin: f64, ymin: f64) -> Rect {
+        Rect { xmax, ymax, xmin, ymin, empty: false }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.empty
+    }
+
+    /// returns true if self has changed
+    pub fn add_point(&mut self, &Point {x, y, r}: &Point) {
+        match r {
+            Some(r) => {
+                if self.is_empty() {
+                    *self = Rect::from(x+r, y+r, x-r, y-r);
+                    return;
+                };
+                if x+r > self.xmax { self.xmax = x+r};
+                if x-r < self.xmin { self.xmin = x-r};
+                if y+r > self.ymax { self.ymax = y+r};
+                if y-r < self.ymin { self.ymin = y-r};
+            },
+            None => {
+                if self.is_empty() {
+                    *self = Rect::from(x, y, x, y);
+                    return;
+                };
+                if x > self.xmax { self.xmax = x};
+                if x < self.xmin { self.xmin = x};
+                if y > self.ymax { self.ymax = y};
+                if y < self.ymin { self.ymin = y};
+            },
+        }
+
+    }
+}
+
+#[cfg(test)]
+mod test;

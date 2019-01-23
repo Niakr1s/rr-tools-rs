@@ -3,7 +3,7 @@ use dxf::entities::{self, EntityType};
 use dxf::{Drawing, DxfResult};
 
 #[derive(Debug, PartialEq)]
-enum Entity {
+pub enum Entity {
     Contur(Contur),
     Point(Point),
 }
@@ -11,7 +11,7 @@ enum Entity {
 #[derive(Debug)]
 pub struct MyDxf {
     path: String,
-    entities: Vec<Entity>,
+    pub entities: Vec<Entity>,
 }
 
 impl MyDxf {
@@ -24,6 +24,17 @@ impl MyDxf {
 
         Ok(MyDxf { path, entities })
     }
+
+    pub fn get_rect(&self) -> Rect {
+//        let (xmax, ymax, xmin, ymin) = (None, None, None, None);
+//        for e in &self.entities {
+//            match e {
+//                Entity::Point(point) => ,
+//                Entity::Contur(contur) => ,
+//            }
+//        }
+        unimplemented!()
+    }
 }
 
 fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
@@ -33,7 +44,7 @@ fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
             EntityType::LwPolyline(lw_polyline) => {
                 let mut contur = Contur::new();
                 for p in lw_polyline.vertices {
-                    contur.add(Point::new(p.x, p.y, None));
+                    contur.add(Point::new(p.y, p.x, None)); // should be reversed
                 }
                 Entity::Contur(contur)
             }

@@ -1,6 +1,7 @@
 use crate::geometry::entities::*;
 use dxf::entities::{self, EntityType};
 use dxf::{Drawing, DxfResult};
+use crate::Rectangable;
 
 #[derive(Debug, PartialEq)]
 pub enum Entity {
@@ -24,8 +25,10 @@ impl MyDxf {
 
         Ok(MyDxf { path, entities })
     }
+}
 
-    pub fn get_rect(&self) -> Rect {
+impl Rectangable for MyDxf {
+    fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         for e in &self.entities {
             match e {

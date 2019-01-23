@@ -1,5 +1,6 @@
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
+use crate::Rectangable;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
@@ -45,6 +46,14 @@ impl Point {
     }
 }
 
+impl Rectangable for Point {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        rect.add_point(self);
+        rect
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Line {
     start: Point,
@@ -54,6 +63,15 @@ pub struct Line {
 impl Line {
     pub fn from_points(start: Point, end: Point) -> Line {
         Line { start, end }
+    }
+}
+
+impl Rectangable for Line {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        rect.add_point(&self.start);
+        rect.add_point(&self.end);
+        rect
     }
 }
 
@@ -80,7 +98,10 @@ impl Contur {
         };
         true
     }
-    pub fn rect(&self) -> Rect {
+}
+
+impl Rectangable for Contur {
+    fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         for p in &self.points {
             rect.add_point(p);

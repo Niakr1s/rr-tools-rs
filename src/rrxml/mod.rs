@@ -11,6 +11,7 @@ use crate::error::MyError;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt;
+use crate::Rectangable;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
@@ -110,10 +111,12 @@ impl RrXml {
         self.parcels.len()
     }
 
-    pub fn rect(&self) -> Rect {
+}
+
+impl Rectangable for RrXml {
+    fn rect(&self) -> Rect {
         unimplemented!()
     }
-
 }
 
 impl Display for RrXml {
@@ -155,7 +158,9 @@ impl Parcel {
     fn add_contur(&mut self, c: Contur) {
         self.conturs.push(c);
     }
+}
 
+impl Rectangable for Parcel {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         for c in &self.conturs {

@@ -38,9 +38,9 @@ impl RrXml {
         let number = root
             .descendants()
             .find(|d| d.has_attribute(CADASTRAL_NUMBER))
-            .expect("no attribute \"Cadastral Number\"")
+            .expect(r#"no attribute "Cadastral Number"#)
             .attribute(CADASTRAL_NUMBER)
-            .expect("no attribute \"Cadastral Number\"")
+            .expect(r#"no attribute "Cadastral Number"#)
             .to_string();
 
         for d in root.descendants() {

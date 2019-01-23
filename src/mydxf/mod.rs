@@ -26,14 +26,18 @@ impl MyDxf {
     }
 
     pub fn get_rect(&self) -> Rect {
-//        let (xmax, ymax, xmin, ymin) = (None, None, None, None);
-//        for e in &self.entities {
-//            match e {
-//                Entity::Point(point) => ,
-//                Entity::Contur(contur) => ,
-//            }
-//        }
-        unimplemented!()
+        let mut rect = Rect::new();
+        for e in &self.entities {
+            match e {
+                Entity::Point(p) => rect.add_point(p),
+                Entity::Contur(c) => {
+                    for p in &c.points {
+                        rect.add_point(p);
+                    }
+                },
+            };
+        };
+        rect
     }
 }
 

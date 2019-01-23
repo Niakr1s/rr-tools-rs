@@ -151,8 +151,17 @@ impl Parcel {
             conturs: vec![],
         }
     }
+
     fn add_contur(&mut self, c: Contur) {
         self.conturs.push(c);
+    }
+
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        for c in &self.conturs {
+            rect.add_rect(&c.rect());
+        };
+        rect
     }
 }
 

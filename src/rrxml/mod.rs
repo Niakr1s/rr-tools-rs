@@ -11,7 +11,7 @@ use crate::error::MyError;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt;
-use crate::Rectangable;
+use crate::geometry::rect::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 

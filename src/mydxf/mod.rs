@@ -1,7 +1,7 @@
 use crate::geometry::entities::*;
 use dxf::entities::{self, EntityType};
 use dxf::{Drawing, DxfResult};
-use crate::Rectangable;
+use crate::geometry::rect::*;
 
 #[derive(Debug, PartialEq)]
 pub enum Entity {

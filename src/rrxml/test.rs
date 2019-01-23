@@ -15,7 +15,6 @@ const CIRCLE_STR: &str = r#"<SpelementUnit TypeUnit="Окружность" SuNmb
 #[test]
 fn get_point_from_node_point() {
     let doc = Document::parse(POINT_STR).unwrap();
-    println!("{:?}", doc);
 
     let mut point = None;
 

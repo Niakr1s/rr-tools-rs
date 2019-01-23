@@ -3,7 +3,11 @@ use std::cmp::PartialEq;
 use roxmltree::{self, Document};
 
 use super::geometry::entities::*;
-use super::scripts::*;
+use std::fs::File;
+use std::io;
+use std::io::Read;
+use std::error::Error;
+use crate::error::MyError;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
@@ -16,20 +20,15 @@ pub struct RrXml {
 }
 
 impl RrXml {
-    pub fn from_file(path: &str) -> Result<RrXml, ()> {
-        let file_content = match file_to_string(path) {
-            Ok(fc) => fc,
-            Err(_) => return Err(()),
-        };
+    pub fn from_file(path: &str) -> Result<RrXml, Box<dyn Error>> {
+        let file_content = file_to_string(path)?;
         let path = path.to_string();
 
-        match RrXml::parse(&file_content) {
-            Ok(rr_xml) => return Ok(RrXml { path, ..rr_xml }),
-            Err(_) => return Err(()),
-        }
+        let parsed = RrXml::parse(&file_content)?;
+        Ok (RrXml { path, ..parsed})
     }
 
-    fn parse(input: &str) -> Result<RrXml, roxmltree::Error> {
+    fn parse(input: &str) -> Result<RrXml, Box<dyn Error>> {
         let mut parcels: Vec<Parcel> = Vec::new();
 
         let root = Document::parse(input)?;
@@ -39,9 +38,9 @@ impl RrXml {
         let number = root
             .descendants()
             .find(|d| d.has_attribute(CADASTRAL_NUMBER))
-            .unwrap()
+            .expect("no attribute \"Cadastral Number\"")
             .attribute(CADASTRAL_NUMBER)
-            .unwrap()
+            .expect("no attribute \"Cadastral Number\"")
             .to_string();
 
         for d in root.descendants() {
@@ -52,7 +51,7 @@ impl RrXml {
                 let mut c = Contur::new();
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
-                        let p = get_point_from_node(&p).unwrap(); //todo handle possible error
+                        let p = get_point_from_node(&p)?;
                         c.add(p);
                     }
                 }
@@ -124,13 +123,13 @@ impl Parcel {
     }
 }
 
-fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, ()> {
+fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, Box<dyn Error>> {
     let (x, y) = match (
         node.attribute("X").unwrap().parse::<f64>(),
         node.attribute("Y").unwrap().parse::<f64>(),
     ) {
         (Ok(x), Ok(y)) => (x, y),
-        _ => return Err(()),
+        _ => return Err(MyError::new(format!("couldn't get X and Y from {:?}", node)).into()),
     };
     let mut r = None;
     for sibling in node.next_siblings() {
@@ -141,6 +140,14 @@ fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, ()> {
     let p = Point { x, y, r };
     Ok(p)
 }
+
+fn file_to_string(filename: &str) -> Result<String, Box<dyn Error>> {
+    let mut f = File::open(filename)?;
+    let mut file_content = String::new();
+    f.read_to_string(&mut file_content)?;
+    Ok(file_content)
+}
+
 
 #[cfg(test)]
 mod test;

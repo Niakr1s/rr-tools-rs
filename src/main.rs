@@ -11,7 +11,7 @@ use pretty_env_logger::formatted_timed_builder;
 mod geometry;
 mod mydxf;
 mod rrxml;
-mod scripts;
+mod error;
 
 fn main() {
     formatted_timed_builder()

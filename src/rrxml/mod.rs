@@ -110,6 +110,10 @@ impl RrXml {
         self.parcels.len()
     }
 
+    pub fn rect(&self) -> Rect {
+        unimplemented!()
+    }
+
 }
 
 impl Display for RrXml {

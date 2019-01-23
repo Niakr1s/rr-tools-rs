@@ -58,23 +58,31 @@ fn get_point_from_node_circle() {
 
 #[test]
 fn cadastral_number_is_true() {
-    let rr = RrXml::from_file(KPT).unwrap();
+    let rr = kpt();
     assert_eq!(rr.number, "77:03:0009007");
     assert_eq!(rr.typ, "KPT");
-    let rr = RrXml::from_file(KVZU).unwrap();
+    let rr = kvzu();
     assert_eq!(rr.number, "21:01:010206:115");
     assert_eq!(rr.typ, "KVZU");
 }
 
 #[test]
 fn get_kpt_parcel_ok() {
-    let rr = RrXml::from_file(KPT).unwrap();
+    let rr = kpt();
     assert!(rr.is_kpt());
     let p = rr.get_kpt_parcel();
     match p {
         Some(p) => assert_eq!(p.number, "77:03:0009007"),
         None => panic!("xml is not empty!"),
     }
+}
+
+#[test]
+fn kpt_rect(){
+    let rr = kpt();
+    let rect = rr.rect();
+    assert_eq!(rect, Rect::from(9233.9800, 24334.3300, 8652.3700, 22910.5700).unwrap());
+
 }
 
 #[test]
@@ -108,4 +116,12 @@ fn point_partial_eq() {
         r: Some(1.),
     };
     assert!(p1 == p2);
+}
+
+fn kpt() -> RrXml {
+    RrXml::from_file(KPT).unwrap()
+}
+
+fn kvzu() -> RrXml {
+    RrXml::from_file(KVZU).unwrap()
 }

@@ -80,6 +80,13 @@ impl Contur {
         };
         true
     }
+    pub fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        for p in &self.points {
+            rect.add_point(p);
+        };
+        rect
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]

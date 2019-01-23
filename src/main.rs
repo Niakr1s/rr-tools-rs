@@ -1,4 +1,3 @@
-#[allow(unused_imports)]
 extern crate dxf;
 extern crate pretty_env_logger;
 
@@ -8,11 +7,7 @@ extern crate log;
 use log::LevelFilter;
 use pretty_env_logger::formatted_timed_builder;
 
-mod geometry;
-mod mydxf;
-mod rrxml;
-mod error;
-mod contur_checks;
+use rr_tools_rs::rrxml;
 
 fn main() {
     formatted_timed_builder()

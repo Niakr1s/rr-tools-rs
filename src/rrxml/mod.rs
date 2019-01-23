@@ -16,7 +16,7 @@ pub struct RrXml {
     path: String,
     typ: String,
     number: String,
-    parcels: Vec<Parcel>,
+    pub parcels: Vec<Parcel>,
 }
 
 impl RrXml {
@@ -94,6 +94,11 @@ impl RrXml {
         }
         false
     }
+
+    pub fn len(&self) -> usize {
+        self.parcels.len()
+    }
+
 }
 
 fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {
@@ -103,7 +108,7 @@ fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Parcel {
     typ: String,
     number: String,

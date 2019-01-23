@@ -44,7 +44,7 @@ impl Point {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Line {
     start: Point,
     end: Point,
@@ -56,7 +56,7 @@ impl Line {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Contur {
     pub points: Vec<Point>,
 }

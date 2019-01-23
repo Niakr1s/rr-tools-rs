@@ -12,6 +12,7 @@ mod geometry;
 mod mydxf;
 mod rrxml;
 mod error;
+mod contur_checks;
 
 fn main() {
     formatted_timed_builder()

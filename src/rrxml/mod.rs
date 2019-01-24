@@ -139,7 +139,7 @@ impl Display for RrXml {
 pub struct Parcel {
     typ: String,
     number: String,
-    entities: Vec<Entity>,
+    entities: Entities,
 }
 
 impl Parcel {
@@ -158,11 +158,7 @@ impl Parcel {
 
 impl Rectangable for Parcel {
     fn rect(&self) -> Rect {
-        let mut rect = Rect::new();
-        for c in &self.entities {
-            rect.add(c);
-        };
-        rect
+        self.entities.rect()
     }
 }
 

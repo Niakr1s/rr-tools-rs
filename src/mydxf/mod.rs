@@ -6,7 +6,7 @@ use dxf::entities::{self, EntityType};
 #[derive(Debug)]
 pub struct MyDxf {
     pub path: String,
-    pub entities: Vec<Entity>,
+    pub entities: Entities,
 }
 
 impl MyDxf {
@@ -23,11 +23,7 @@ impl MyDxf {
 
 impl Rectangable for MyDxf {
     fn rect(&self) -> Rect {
-        let mut rect = Rect::new();
-        for e in &self.entities {
-            rect.add(e);
-        };
-        rect
+        self.entities.rect()
     }
 }
 

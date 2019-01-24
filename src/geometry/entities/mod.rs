@@ -1,6 +1,19 @@
+use crate::geometry::traits::intersectable::Intersectable;
 use crate::geometry::traits::rectangable::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
+
+pub type Entities = Vec<Entity>;
+
+impl Rectangable for Entities {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        for e in self {
+            rect.add(e);
+        };
+        rect
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Entity {
@@ -9,6 +22,11 @@ pub enum Entity {
 }
 
 impl Entity {
+    pub fn from_point(p: Point) -> Entity {
+        Entity::Point(p)
+    }
+
+    /// Can return Some(Entity::Contur), Some(Entity::Point) and None
     pub fn from_contur(c: Contur) -> Option<Entity> {
         let mut c = c;
         match c.len() {
@@ -27,6 +45,17 @@ impl Rectangable for Entity {
             Entity::Point(ref p) => rect.add(p),
         }
         rect
+    }
+}
+
+impl Intersectable for Entity {
+    // todo
+    fn intersect_entity(&self, entity: Entity) -> bool {
+        unimplemented!()
+    }
+
+    fn intersect_entities(&self, entities: Entities) -> bool {
+        unimplemented!()
     }
 }
 
@@ -120,3 +149,6 @@ impl Rectangable for Contur {
         rect
     }
 }
+
+#[cfg(test)]
+mod test;

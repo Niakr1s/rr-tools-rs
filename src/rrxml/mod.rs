@@ -1,17 +1,15 @@
-use std::cmp::PartialEq;
-
+use crate::error::MyError;
+use crate::geometry::rect::*;
 use roxmltree::{self, Document};
-
-use super::geometry::entities::*;
+use std::cmp::PartialEq;
+use std::error::Error;
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io;
 use std::io::Read;
-use std::error::Error;
-use crate::error::MyError;
-use std::fmt::Display;
-use std::fmt::Formatter;
-use std::fmt;
-use crate::geometry::rect::*;
+use super::geometry::entities::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
@@ -55,10 +53,14 @@ impl RrXml {
                 let mut c = Contur::new();
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
-                        let p = get_point_from_node(&p)?;
+                        let p = point_from_node_chunk(&p)?;
                         c.add(p);
                     }
                 }
+                let c = match Entity::from_contur(c) {
+                    Some(e) => e,
+                    None => continue,
+                };
                 let (typ, cad_number) = get_parent_type_and_number(&d);
                 match parcels.iter_mut().find(|p| p.number == cad_number) {
                     Some(parcel) => {
@@ -132,10 +134,18 @@ impl Display for RrXml {
     }
 }
 
-fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {
-    match node.attribute(CADASTRAL_NUMBER) {
-        Some(attr) => (node.tag_name().name().to_string(), attr.to_string()),
-        None => get_parent_type_and_number(&node.parent().unwrap()),
+enum Entity {
+    Contur(Contur),
+    Point(Point),
+}
+
+impl Entity {
+    pub fn from_contur(c: Contur) -> Option<Entity> {
+        match c.len() {
+            0 => None,
+            1 => Some(Entity::Point(c.points[0])),
+            _ => Some(Entity::Contur(c)),
+        }
     }
 }
 
@@ -143,7 +153,7 @@ fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String
 pub struct Parcel {
     typ: String,
     number: String,
-    conturs: Vec<Contur>,
+    conturs: Vec<Entity>,
 }
 
 impl Parcel {
@@ -155,7 +165,7 @@ impl Parcel {
         }
     }
 
-    fn add_contur(&mut self, c: Contur) {
+    fn add_contur(&mut self, c: Entity) {
         self.conturs.push(c);
     }
 }
@@ -170,7 +180,14 @@ impl Rectangable for Parcel {
     }
 }
 
-fn get_point_from_node(node: &roxmltree::Node<'_, '_>) -> Result<Point, Box<dyn Error>> {
+fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {
+    match node.attribute(CADASTRAL_NUMBER) {
+        Some(attr) => (node.tag_name().name().to_string(), attr.to_string()),
+        None => get_parent_type_and_number(&node.parent().unwrap()),
+    }
+}
+
+fn point_from_node_chunk(node: &roxmltree::Node<'_, '_>) -> Result<Point, Box<dyn Error>> {
     let (x, y) = match (
         node.attribute("X").unwrap().parse::<f64>(),
         node.attribute("Y").unwrap().parse::<f64>(),

@@ -1,6 +1,6 @@
+use crate::geometry::rect::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
-use crate::geometry::rect::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
@@ -55,27 +55,6 @@ impl Rectangable for Point {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Line {
-    start: Point,
-    end: Point,
-}
-
-impl Line {
-    pub fn from_points(start: Point, end: Point) -> Line {
-        Line { start, end }
-    }
-}
-
-impl Rectangable for Line {
-    fn rect(&self) -> Rect {
-        let mut rect = Rect::new();
-        rect.add_point(&self.start);
-        rect.add_point(&self.end);
-        rect
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
 pub struct Contur {
     pub points: Vec<Point>,
 }
@@ -97,6 +76,9 @@ impl Contur {
             None => return false,
         };
         true
+    }
+    pub fn len(&self) -> usize {
+        self.points.len()
     }
 }
 

@@ -20,7 +20,7 @@ fn get_point_from_node_point() {
 
     for p in doc.descendants() {
         if p.tag_name().name() == "Ordinate" {
-            point = Some(get_point_from_node(&p).unwrap());
+            point = Some(point_from_node_chunk(&p).unwrap());
         }
     }
 
@@ -42,7 +42,7 @@ fn get_point_from_node_circle() {
 
     for p in doc.descendants() {
         if p.tag_name().name() == "Ordinate" {
-            point = Some(get_point_from_node(&p).unwrap());
+            point = Some(point_from_node_chunk(&p).unwrap());
         }
     }
 

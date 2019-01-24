@@ -1,4 +1,4 @@
-use crate::geometry::rect::*;
+use crate::geometry::traits::rectangable::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
 

@@ -1,5 +1,5 @@
 use crate::geometry::entities::*;
-use crate::geometry::rect::*;
+use crate::geometry::traits::rectangable::*;
 use dxf::{Drawing, DxfResult};
 use dxf::entities::{self, EntityType};
 

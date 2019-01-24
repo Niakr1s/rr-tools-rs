@@ -1,5 +1,5 @@
 use crate::error::MyError;
-use crate::geometry::rect::*;
+use crate::geometry::traits::rectangable::*;
 use roxmltree::{self, Document};
 use std::cmp::PartialEq;
 use std::error::Error;

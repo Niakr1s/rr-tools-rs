@@ -1,11 +1,11 @@
-use crate::geometry::rect::Rectangable;
+use crate::geometry::traits::rectangable::Rectangable;
 use crate::mydxf::MyDxf;
 use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
 
 pub mod simple_checks;
 pub mod entities;
-pub mod rect;
+pub mod traits;
 
 fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
     if rrxml.len() == 0 { return None };

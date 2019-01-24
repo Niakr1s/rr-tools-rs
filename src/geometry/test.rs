@@ -1,6 +1,6 @@
 use crate::geometry::entities::Contur;
 use crate::geometry::entities::Point;
-use crate::geometry::rect::Rectangable;
+use crate::geometry::traits::rectangable::Rectangable;
 use super::*;
 
 #[test]

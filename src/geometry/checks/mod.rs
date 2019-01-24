@@ -143,7 +143,7 @@ fn circle_intersect(
 
     let radius = match radius {
         Some(r) => r,
-        None => return false,
+        None => 0.,
     };
 
     let r1 = dist(x0, y0, x1, y1);

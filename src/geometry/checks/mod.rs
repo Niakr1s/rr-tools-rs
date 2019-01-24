@@ -1,6 +1,6 @@
 use crate::geometry::entities::*;
 
-pub fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
+pub fn is_intersect(segment1: (&Point, &Point), segment2: (&Point, &Point)) -> bool {
     /* Returns True if intersect else False
     segment1 = (p1, q1), segment2 = (p2, q2),
     where p1,q1,p2,q2 - points like (x,y)->tuple, where x,y - coordinates */

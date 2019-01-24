@@ -4,41 +4,41 @@ use super::*;
 fn is_intersect_check1() {
     // should be false
     let seg1 = (
-        Point::new(1., 1., None),
-        Point::new(10., 1., None),
+        &Point::new(1., 1., None),
+        &Point::new(10., 1., None),
     );
     let seg2 = (
-        Point::new(1., 2., None),
-        Point::new(10., 2., None),
+        &Point::new(1., 2., None),
+        &Point::new(10., 2., None),
     );
-    assert!(!is_intersect(&seg1, &seg2));
+    assert!(!is_intersect(seg1, seg2));
 }
 
 #[test]
 fn is_intersect_check2() {
     // should be true
     let seg1 = (
-        Point::new(10., 0., None),
-        Point::new(0., 10., None),
+        &Point::new(10., 0., None),
+        &Point::new(0., 10., None),
     );
     let seg2 = (
-        Point::new(0., 0., None),
-        Point::new(10., 10., None),
+        &Point::new(0., 0., None),
+        &Point::new(10., 10., None),
     );
-    assert!(is_intersect(&seg1, &seg2));
+    assert!(is_intersect(seg1, seg2));
 }
 #[test]
 fn is_intersect_check3() {
     // should be false
     let seg1 = (
-        Point::new(-5., -5., None),
-        Point::new(0., 0., None),
+        &Point::new(-5., -5., None),
+        &Point::new(0., 0., None),
     );
     let seg2 = (
-        Point::new(1., 1., None),
-        Point::new(10., 10., None),
+        &Point::new(1., 1., None),
+        &Point::new(10., 10., None),
     );
-    assert!(!is_intersect(&seg1, &seg2));
+    assert!(!is_intersect(seg1, seg2));
 }
 
 #[test]

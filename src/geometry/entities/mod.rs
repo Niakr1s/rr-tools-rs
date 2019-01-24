@@ -62,6 +62,7 @@ impl Intersectable for Entity {
             Entity::Contur(ref self_contur) => match entity {
                 Entity::Point(ref other_point) => (),
                 Entity::Contur(ref other_contur) => {
+                    // 1st check from rosreestr_tools Python implementation
                     let self_points = &self_contur.points;
                     let mut self_iter = self_points.iter();
                     let mut self_first = self_iter.next().unwrap();
@@ -72,8 +73,10 @@ impl Intersectable for Entity {
                         for other_p in other_iter {
                             let self_segment = (self_first, self_p);
                             let other_segment = (other_first, other_p);
-//                            if is_intersect(self_segment, other_segment) { return true };
+                            if is_intersect(self_segment, other_segment) { return true };
+                            other_first = other_p;
                         }
+                        self_first = self_p;
                     }
                 },
             },

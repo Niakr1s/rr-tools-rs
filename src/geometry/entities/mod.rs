@@ -56,8 +56,11 @@ impl Intersectable for Entity {
         match self {
             // Point
             Entity::Point(ref self_point) => match entity {
-                Entity::Point(ref other_point) => return self_point == other_point,
+                Entity::Point(ref other_point) => return circle_intersect_circle(self_point, other_point),
                 Entity::Contur(ref other_contur) => {
+                    println!("got {:?} and contur {:?}", self_point, other_contur);
+                    if point_inside_contur(self_point, other_contur) { return true };
+                    println!("point_inside_contur failed");
                     // 3 check from rosreestr_tools Python
                     let other_points = &other_contur.points;
                     let mut other_iter = other_points.iter();
@@ -69,37 +72,41 @@ impl Intersectable for Entity {
                 },
             },
             // Contur
-            Entity::Contur(ref self_contur) => match entity {
-                Entity::Point(ref other_point) => (),
-                Entity::Contur(ref other_contur) => {
-                    // flag for 4 check from rosreestr_tools Python
-                    let mut inpolygon = self_contur.is_closed();  // possibly true
+            Entity::Contur(ref self_contur) => {
+                // flag for 4 check from rosreestr_tools Python
+                let mut inpolygon = self_contur.is_closed();  // possibly true
 
-                    let self_points = &self_contur.points;
-                    let mut self_iter = self_points.iter();
-                    let mut self_first = self_iter.next().unwrap();
-                    for self_p in self_iter {
-                        let other_points = &other_contur.points;
-                        let mut other_iter = other_points.iter();
-                        let mut other_first = other_iter.next().unwrap();
-                        // 4 check from rosreestr_tools Python
-                        if inpolygon && !point_inside_contur(other_first, self_contur) { inpolygon = false };
-                        for other_p in other_iter {
-                            let self_segment = (self_first, self_p);
-                            let other_segment = (other_first, other_p);
-                            // 1 check from rosreestr_tools Python
-                            if lines_intersect(self_segment, other_segment) { return true };
-                            // clone of 4 check before for loop, but for other_p
-                            if inpolygon && !point_inside_contur(other_p, self_contur) { inpolygon = false };
-                            other_first = other_p;
-                        }
-                        self_first = self_p;
+                let self_points = &self_contur.points;
+                let mut self_iter = self_points.iter();
+                let mut self_first = self_iter.next().unwrap();
+                for self_p in self_iter {
+                    match entity {
+                        Entity::Point(ref other_point) => {
+                            if inpolygon && !point_inside_contur(other_point, self_contur) { inpolygon = false };
+                            if circle_intersect_line(other_point, (self_first, self_p)) { return true };
+                        },
+                        Entity::Contur(ref other_contur) => {
+                            let other_points = &other_contur.points;
+                            let mut other_iter = other_points.iter();
+                            let mut other_first = other_iter.next().unwrap();
+                            // 4 check from rosreestr_tools Python
+                            if inpolygon && !point_inside_contur(other_first, self_contur) { inpolygon = false };
+                            for other_p in other_iter {
+                                let self_segment = (self_first, self_p);
+                                let other_segment = (other_first, other_p);
+                                // 1 check from rosreestr_tools Python
+                                if lines_intersect(self_segment, other_segment) { return true };
+                                // clone of 4 check before for loop, but for other_p
+                                if inpolygon && !point_inside_contur(other_p, self_contur) { inpolygon = false };
+                                other_first = other_p;
+                            }
+                        },
                     }
-                },
+                    self_first = self_p;
+                }
             },
-        }
-
-        unimplemented!()
+        };
+        false
     }
 }
 

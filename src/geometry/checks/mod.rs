@@ -125,17 +125,13 @@ pub fn inside_polygon(p: &Point, c: &Contur) -> bool {
     inside
 }
 
-fn circle_intersect(
-    &Point {
-        x: x0,
-        y: y0,
-        r: radius,
-    }: &Point,
-    &Point { x: x1, y: y1, .. }: &Point,
-    &Point { x: x2, y: y2, .. }: &Point,
-) -> bool {
+pub fn circle_intersect(circle: &Point, start: &Point, end: &Point) -> bool {
     /* algorithm:
     http://pers.narod.ru/algorithms/pas_dist_from_point_to_line.html */
+
+    let &Point { x: x0, y: y0, r: radius } = circle;
+    let &Point { x: x1, y: y1, .. } = start;
+    let &Point { x: x2, y: y2, .. } = end;
 
     fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
         ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)

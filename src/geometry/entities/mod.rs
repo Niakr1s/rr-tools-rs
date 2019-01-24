@@ -56,7 +56,15 @@ impl Intersectable for Entity {
             // Point
             Entity::Point(ref self_point) => match entity {
                 Entity::Point(ref other_point) => (),
-                Entity::Contur(ref other_contur) => (),
+                Entity::Contur(ref other_contur) => {
+                    let other_points = &other_contur.points;
+                    let mut other_iter = other_points.iter();
+                    let mut other_first = other_iter.next().unwrap();
+                    for other_p in other_iter {
+                        if circle_intersect(self_point, other_first, other_p) { return true };
+                        other_first = other_p;
+                    }
+                },
             },
             // Contur
             Entity::Contur(ref self_contur) => match entity {

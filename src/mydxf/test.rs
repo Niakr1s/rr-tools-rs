@@ -8,7 +8,7 @@ const P3: Point = Point { x: -3.0, y: 2.0, r: None };
 
 #[test]
 fn triangle_polyline() {
-    let path = "src/mydxf/test/dxfs/triangle_polyline.dxf";
+    let path = r"src\test_files\dxfs\triangle_polyline.dxf";
     let my_dxf = MyDxf::from_file(path);
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();
@@ -23,7 +23,7 @@ fn triangle_polyline() {
 
 #[test]
 fn triangle_line() {
-    let path = "src/mydxf/test/dxfs/triangle_line.dxf";
+    let path = r"src\test_files\dxfs\triangle_line.dxf";
     let my_dxf = MyDxf::from_file(path);
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();
@@ -50,7 +50,7 @@ fn triangle_line() {
 
 #[test]
 fn circle() {
-    let path = "src/mydxf/test/dxfs/circle.dxf";
+    let path = r"src\test_files\dxfs\circle.dxf";
     let my_dxf = MyDxf::from_file(path);
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();
@@ -63,7 +63,7 @@ fn circle() {
 
 #[test]
 fn point() {
-    let path = "src/mydxf/test/dxfs/point.dxf";
+    let path = r"src\test_files\dxfs\point.dxf";
     let my_dxf = MyDxf::from_file(path);
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();

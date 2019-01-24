@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/xsl" href="https://portal.rosreestr.ru/xsl/GKN/KPT/10/common.xsl"?>
-<KPT xmlns:ns2="urn://x-artefacts-rosreestr-ru/commons/complex-types/address-output/4.0.1" 
-    xmlns:ns3="urn://x-artefacts-rosreestr-ru/commons/complex-types/entity-spatial/5.0.1" 
-    xmlns:ns4="urn://x-artefacts-rosreestr-ru/commons/complex-types/parameters-oks/2.0.1" 
-    xmlns:ns5="urn://x-artefacts-rosreestr-ru/commons/complex-types/document-output/4.0.1" 
-    xmlns:ns6="urn://x-artefacts-rosreestr-ru/commons/complex-types/certification-doc/1.0" 
-    xmlns:ns7="urn://x-artefacts-smev-gov-ru/supplementary/commons/1.0.1" 
-    xmlns="urn://x-artefacts-rosreestr-ru/outgoing/kpt/10.0.1">
+<KPT xmlns:ns2="urn://x-artefacts-rosreestr-ru/commons/complex-types/address-output/4.0.1"
+     xmlns:ns3="urn://x-artefacts-rosreestr-ru/commons/complex-types/entity-spatial/5.0.1"
+     xmlns:ns4="urn://x-artefacts-rosreestr-ru/commons/complex-types/parameters-oks/2.0.1"
+     xmlns:ns6="urn://x-artefacts-rosreestr-ru/commons/complex-types/certification-doc/1.0"
+     xmlns="urn://x-artefacts-rosreestr-ru/outgoing/kpt/10.0.1">
     <CadastralBlocks>
         <CadastralBlock CadastralNumber="77:03:0009007">
             <Area>

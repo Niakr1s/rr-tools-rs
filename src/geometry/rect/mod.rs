@@ -3,9 +3,7 @@ use crate::geometry::entities::*;
 pub trait Rectangable {
     fn rect(&self) -> Rect;
 
-    /// Autoimplemented.
-    /// If true - rects can not intersect physically
-    /// If false - rects can both intersect or not
+    /// Negation of does_not_intersects method doesn't mean that objects intersect,
     fn can_not_intersect(&self, other: &impl Rectangable) -> bool {
         let (a, b) = (self.rect(), other.rect());
         a.xmax < b.xmin || a.ymax < b.ymin || a.xmin > b.xmax || a.ymin > b.ymax

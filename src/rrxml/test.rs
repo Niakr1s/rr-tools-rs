@@ -1,7 +1,7 @@
 use super::*;
 
-const KVZU: &str = "test_xmls/KVZU Parcel 21 01 010206 115.xml";
-const KPT: &str = "test_xmls/KPT CadastralBlock 77 03 0009007.xml";
+const KVZU: &str = r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml";
+const KPT: &str = r"src\test_files\xmls\KPT CadastralBlock 77 03 0009007.xml";
 
 const POINT_STR: &str = r#"<SpelementUnit TypeUnit="Точка" SuNmb="17">
                                 <Ordinate X="410328.96" Y="1230548.8" OrdNmb="1" />

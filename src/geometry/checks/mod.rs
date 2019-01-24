@@ -5,29 +5,46 @@ use crate::geometry::entities::*;
 pub fn lines_intersect(line1: (&Point, &Point), line2: (&Point, &Point)) -> bool {
     let ((p1, q1), (p2, q2)) = (line1, line2);
 
+    /// Given three colinear points p, q, r, the function checks if
+    /// point q lies on line segment 'pr'
     fn on_segment(p: &Point, q: &Point, r: &Point) -> bool {
         q.x <= p.x.max(r.x) && q.x >= p.x.min(r.x) &&
             q.y <= p.y.max(r.y) && q.y >= p.y.min(r.y)
     }
 
+    /// To find orientation of ordered triplet (p, q, r).
+    /// The function returns following values
+    /// 0 --> p, q and r are colinear
+    /// 1 --> Clockwise
+    /// 2 --> Counterclockwise
     fn orientation(p: &Point, q: &Point, r: &Point) -> i32 {
+        // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
+        // for details of below formula.
         let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-        if val == 0. { return 0 };
+        if val == 0. { return 0 }; //collinear
         match val > 0. {
-            true => 1,
-            false => 2,
+            true => 1,  //clockwise
+            false => 2,  //counterclockwise
         }
     }
 
+    // Find the four orientations needed for general and
+    // special cases
     let o1 = orientation(p1, q1, p2);
     let o2 = orientation(p1, q1, q2);
     let o3 = orientation(p2, q2, p1);
     let o4 = orientation(p2, q2, q1);
 
+    // General case
     if o1 != o2 && o3 != o4 { return true };
+    // Special Cases
+    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
     if o1 == 0 && on_segment(p1, p2, q1) { return true };
+    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
     if o2 == 0 && on_segment(p1, q2, q1) { return true };
+    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
     if o3 == 0 && on_segment(p2, p1, q2) { return true };
+    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
     if o4 == 0 && on_segment(p2, q1, q2) { return true };
     false
 }
@@ -59,6 +76,7 @@ pub fn point_inside_contur(p: &Point, c: &Contur) -> bool {
         }
         p1 = p2;
     }
+//    println!("{}: point {:?} inside contur {:?}", inside, p, c);
     inside
 }
 

@@ -50,60 +50,81 @@ impl Rectangable for Entity {
 }
 
 impl Intersectable for Entity {
-    // todo
     fn intersect_entity(&self, entity: &Entity) -> bool {
         if self.can_not_intersect(entity) { return false };
+
         match self {
             // Point
             Entity::Point(ref self_point) => match entity {
-                Entity::Point(ref other_point) => circle_intersect_circle(self_point, other_point),
+                Entity::Point(ref other_point) => {
+                    // simple circles check
+                    circle_intersect_circle(self_point, other_point)
+                },
                 Entity::Contur(ref other_contur) => {
                     if point_inside_contur(self_point, other_contur) { return true };
-                    // 3 check from rosreestr_tools Python
+
                     let other_points = &other_contur.points;
                     let mut other_iter = other_points.iter();
                     let mut other_first = other_iter.next().unwrap();
+
                     for other_p in other_iter {
                         if circle_intersect_line(self_point, (other_first, other_p)) { return true };
                         other_first = other_p;
                     };
+
                     false
                 },
             },
             // Contur
             Entity::Contur(ref self_contur) => {
-                // flag for 4 check from rosreestr_tools Python
-                let mut inpolygon = self_contur.is_closed();  // possibly true
+                // flags for checking other polygon in self and vice versa
+                let mut other_inpolygon = self_contur.is_closed();  // possibly true
+                let mut self_inpolygon = None;  // None if entity is Entity::Point
 
                 let self_points = &self_contur.points;
                 let mut self_iter = self_points.iter();
                 let mut self_first = self_iter.next().unwrap();
+
                 for self_p in self_iter {
                     match entity {
                         Entity::Point(ref other_point) => {
-                            if inpolygon && !point_inside_contur(other_point, self_contur) { inpolygon = false };
+                            if other_inpolygon { other_inpolygon = point_inside_contur(other_point, self_contur) };
                             if circle_intersect_line(other_point, (self_first, self_p)) { return true };
                         },
                         Entity::Contur(ref other_contur) => {
+                            let mut self_inpolygon_inner = other_contur.is_closed();
+
                             let other_points = &other_contur.points;
                             let mut other_iter = other_points.iter();
                             let mut other_first = other_iter.next().unwrap();
-                            // 4 check from rosreestr_tools Python
-                            if inpolygon && !point_inside_contur(other_first, self_contur) { inpolygon = false };
+
                             for other_p in other_iter {
                                 let self_segment = (self_first, self_p);
                                 let other_segment = (other_first, other_p);
-                                // 1 check from rosreestr_tools Python
+                                // immediatly return if lines are intersecting each other
                                 if lines_intersect(self_segment, other_segment) { return true };
-                                // clone of 4 check before for loop, but for other_p
-                                if inpolygon && !point_inside_contur(other_p, self_contur) { inpolygon = false };
+
+                                // updating inpolygon flags
+                                if self_inpolygon_inner { self_inpolygon_inner = point_inside_contur(self_first, other_contur) };
+                                if other_inpolygon { other_inpolygon = point_inside_contur(other_first, self_contur) };
+
                                 other_first = other_p;
-                            }
+                            };
+
+                            // updating outer flag
+                            self_inpolygon = match self_inpolygon {
+                                Some(b) => Some(b && self_inpolygon_inner),
+                                None => Some(self_inpolygon_inner),
+                            };
                         },
                     }
                     self_first = self_p;
                 };
-                inpolygon
+
+                match self_inpolygon {
+                    Some(b) => b || other_inpolygon,
+                    None => other_inpolygon,
+                }
             },
         }
     }

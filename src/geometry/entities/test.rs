@@ -40,7 +40,7 @@ fn entity_intersect_entity_fig1() {
     assert!(closed_contur.intersect_entity(&circle));
     assert!(closed_contur.intersect_entity(&closed_contur));
     assert!(!closed_contur.intersect_entity(&open_outer_contur));
-    assert!(!closed_contur.intersect_entity(&open_inner_contur));
+    assert!(closed_contur.intersect_entity(&open_inner_contur));
 
     assert!(!open_outer_contur.intersect_entity(&point));
     assert!(open_outer_contur.intersect_entity(&circle));
@@ -51,7 +51,7 @@ fn entity_intersect_entity_fig1() {
     assert!(!open_inner_contur.intersect_entity(&point));
     assert!(open_inner_contur.intersect_entity(&circle));
     assert!(open_inner_contur.intersect_entity(&closed_contur));
-    assert!(open_inner_contur.intersect_entity(&open_outer_contur));
+    assert!(!open_inner_contur.intersect_entity(&open_outer_contur));
     assert!(open_inner_contur.intersect_entity(&open_inner_contur));
 }
 

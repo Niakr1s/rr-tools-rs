@@ -2,6 +2,34 @@ use crate::geometry::rect::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Entity {
+    Contur(Contur),
+    Point(Point),
+}
+
+impl Entity {
+    pub fn from_contur(c: Contur) -> Option<Entity> {
+        let mut c = c;
+        match c.len() {
+            0 => None,
+            1 => Some(Entity::Point(c.points.pop().unwrap())),
+            _ => Some(Entity::Contur(c)),
+        }
+    }
+}
+
+impl Rectangable for Entity {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        match self {
+            Entity::Contur(c) => rect.add_rect(&c.rect()),
+            Entity::Point(p) => rect.add_rect(&p.rect()),
+        }
+        rect
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
     pub x: f64,

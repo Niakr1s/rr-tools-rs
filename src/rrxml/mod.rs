@@ -74,7 +74,7 @@ impl RrXml {
                             "'{} {}': pushing with conturs: {:?}",
                             p.typ,
                             p.number,
-                            p.conturs,
+                            p.entities,
                         );
                         parcels.push(p);
                     }
@@ -90,9 +90,6 @@ impl RrXml {
         };
 
         debug!("{:?}", res);
-
-
-
         Ok(res)
     }
 
@@ -134,26 +131,11 @@ impl Display for RrXml {
     }
 }
 
-enum Entity {
-    Contur(Contur),
-    Point(Point),
-}
-
-impl Entity {
-    pub fn from_contur(c: Contur) -> Option<Entity> {
-        match c.len() {
-            0 => None,
-            1 => Some(Entity::Point(c.points[0])),
-            _ => Some(Entity::Contur(c)),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Parcel {
     typ: String,
     number: String,
-    conturs: Vec<Entity>,
+    entities: Vec<Entity>,
 }
 
 impl Parcel {
@@ -161,19 +143,19 @@ impl Parcel {
         Parcel {
             typ: typ.to_string(),
             number: number.to_string(),
-            conturs: vec![],
+            entities: vec![],
         }
     }
 
     fn add_contur(&mut self, c: Entity) {
-        self.conturs.push(c);
+        self.entities.push(c);
     }
 }
 
 impl Rectangable for Parcel {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
-        for c in &self.conturs {
+        for c in &self.entities {
             rect.add_rect(&c.rect());
         };
         rect

@@ -1,13 +1,7 @@
 use crate::geometry::entities::*;
-use dxf::entities::{self, EntityType};
-use dxf::{Drawing, DxfResult};
 use crate::geometry::rect::*;
-
-#[derive(Debug, PartialEq)]
-pub enum Entity {
-    Contur(Contur),
-    Point(Point),
-}
+use dxf::{Drawing, DxfResult};
+use dxf::entities::{self, EntityType};
 
 #[derive(Debug)]
 pub struct MyDxf {

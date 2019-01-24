@@ -12,9 +12,9 @@ fn rects_can_not_intersect_ok() {
     c.add(Point::new(4., 2., None));
     // got Rect { 4 3 -2 -3 }
 
-    assert!(!rects_can_not_intersect(&p, &c));
+    assert!(!p.can_not_intersect(&c));
 
     let p = Point::new(5., 0., None);  // got Rect {5 0 5 0}
 
-    assert!(rects_can_not_intersect(&p, &c));
+    assert!(p.can_not_intersect(&c));
 }

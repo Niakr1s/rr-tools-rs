@@ -65,11 +65,11 @@ impl RrXml {
                 match parcels.iter_mut().find(|p| p.number == cad_number) {
                     Some(parcel) => {
                         trace!("'{} {}': adding contur: {:?}", parcel.typ, parcel.number, c);
-                        parcel.add_contur(c);
+                        parcel.add_entity(c);
                     }
                     None => {
                         let mut p = Parcel::new(typ, cad_number);
-                        p.add_contur(c);
+                        p.add_entity(c);
                         trace!(
                             "'{} {}': pushing with conturs: {:?}",
                             p.typ,
@@ -115,10 +115,8 @@ impl RrXml {
 impl Rectangable for RrXml {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
-        for parcel in &self.parcels {
-            for e in &parcel.entities {
-                rect.add_rect(&e.rect());
-            }
+        for p in &self.parcels {
+            rect.add(p)
         }
         rect
     }
@@ -153,7 +151,7 @@ impl Parcel {
         }
     }
 
-    fn add_contur(&mut self, c: Entity) {
+    fn add_entity(&mut self, c: Entity) {
         self.entities.push(c);
     }
 }
@@ -162,7 +160,7 @@ impl Rectangable for Parcel {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         for c in &self.entities {
-            rect.add_rect(&c.rect());
+            rect.add(c);
         };
         rect
     }

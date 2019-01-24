@@ -23,8 +23,8 @@ impl Rectangable for Entity {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         match self {
-            Entity::Contur(c) => rect.add_rect(&c.rect()),
-            Entity::Point(p) => rect.add_rect(&p.rect()),
+            Entity::Contur(ref c) => rect.add(c),
+            Entity::Point(ref p) => rect.add(p),
         }
         rect
     }
@@ -76,9 +76,10 @@ impl Point {
 
 impl Rectangable for Point {
     fn rect(&self) -> Rect {
-        let mut rect = Rect::new();
-        rect.add_point(self);
-        rect
+        match self.r {
+            Some(r) => Rect::from(self.x + r, self.y + r, self.x - r, self.y - r).unwrap(),
+            None => Rect::from(self.x, self.y, self.x, self.y).unwrap(),
+        }
     }
 }
 
@@ -114,7 +115,7 @@ impl Rectangable for Contur {
     fn rect(&self) -> Rect {
         let mut rect = Rect::new();
         for p in &self.points {
-            rect.add_point(p);
+            rect.add(p);
         };
         rect
     }

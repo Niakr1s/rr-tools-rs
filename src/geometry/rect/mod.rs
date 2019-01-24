@@ -2,14 +2,22 @@ use crate::geometry::entities::*;
 
 pub trait Rectangable {
     fn rect(&self) -> Rect;
+
+    /// Autoimplemented.
+    /// If true - rects can not intersect physically
+    /// If false - rects can both intersect or not
+    fn can_not_intersect(&self, other: &impl Rectangable) -> bool {
+        let (a, b) = (self.rect(), other.rect());
+        a.xmax < b.xmin || a.ymax < b.ymin || a.xmin > b.xmax || a.ymin > b.ymax
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Rect {
-    pub xmax: f64,
-    pub ymax: f64,
-    pub xmin: f64,
-    pub ymin: f64,
+    xmax: f64,
+    ymax: f64,
+    xmin: f64,
+    ymin: f64,
     empty: bool,
 }
 
@@ -32,11 +40,16 @@ impl Rect {
         Ok(Rect { xmax, ymax, xmin, ymin, empty: false })
     }
 
+    pub fn add(&mut self, other: &impl Rectangable) {
+        let other = other.rect();
+        self.add_rect(&other);
+    }
+
     pub fn is_empty(&self) -> bool {
         self.empty
     }
 
-    pub fn add_rect(&mut self, other: &Rect) {
+    fn add_rect(&mut self, other: &Rect) {
         if other.is_empty() { return };
         if self.is_empty() {
             *self = other.clone();
@@ -53,38 +66,5 @@ impl Rect {
         if other.ymin < self.ymin {
             self.ymin = other.ymin
         };
-    }
-
-    /// returns true if self has changed
-    pub fn add_point(&mut self, &Point {x, y, r}: &Point) {
-        match r {
-            Some(r) => {
-                if self.is_empty() {
-                    *self = Rect::from(x+r, y+r, x-r, y-r).unwrap();
-                    return;
-                };
-                if x+r > self.xmax { self.xmax = x+r};
-                if x-r < self.xmin { self.xmin = x-r};
-                if y+r > self.ymax { self.ymax = y+r};
-                if y-r < self.ymin { self.ymin = y-r};
-            },
-            None => {
-                if self.is_empty() {
-                    *self = Rect::from(x, y, x, y).unwrap();
-                    return;
-                };
-                if x > self.xmax {
-                    self.xmax = x
-                } else if x < self.xmin {
-                    self.xmin = x
-                };
-                if y > self.ymax {
-                    self.ymax = y
-                } else if y < self.ymin {
-                    self.ymin = y
-                };
-            },
-        }
-
     }
 }

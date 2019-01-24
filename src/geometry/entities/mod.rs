@@ -50,11 +50,11 @@ impl Rectangable for Entity {
 
 impl Intersectable for Entity {
     // todo
-    fn intersect_entity(&self, entity: Entity) -> bool {
+    fn intersect_entity(&self, entity: &Entity) -> bool {
         unimplemented!()
     }
 
-    fn intersect_entities(&self, entities: Entities) -> bool {
+    fn intersect_entities(&self, entities: &Entities) -> bool {
         unimplemented!()
     }
 }

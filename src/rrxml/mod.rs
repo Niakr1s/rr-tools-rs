@@ -114,7 +114,13 @@ impl RrXml {
 
 impl Rectangable for RrXml {
     fn rect(&self) -> Rect {
-        unimplemented!()
+        let mut rect = Rect::new();
+        for parcel in &self.parcels {
+            for e in &parcel.entities {
+                rect.add_rect(&e.rect());
+            }
+        }
+        rect
     }
 }
 

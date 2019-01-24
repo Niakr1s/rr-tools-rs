@@ -12,6 +12,15 @@ const CIRCLE_STR: &str = r#"<SpelementUnit TypeUnit="Окружность" SuNmb
                                     <R>0.5</R>
                                 </SpelementUnit>"#;
 
+
+fn kpt() -> RrXml {
+    RrXml::from_file(KPT).unwrap()
+}
+
+fn kvzu() -> RrXml {
+    RrXml::from_file(KVZU).unwrap()
+}
+
 #[test]
 fn get_point_from_node_point() {
     let doc = Document::parse(POINT_STR).unwrap();
@@ -26,11 +35,7 @@ fn get_point_from_node_point() {
 
     assert_eq!(
         point.unwrap(),
-        Point {
-            x: 410328.96,
-            y: 1230548.8,
-            r: None,
-        }
+        Point::new(410328.96, 1230548.8, None)
     )
 }
 
@@ -48,11 +53,7 @@ fn get_point_from_node_circle() {
 
     assert_eq!(
         point.unwrap(),
-        Point {
-            x: 410328.96,
-            y: 1230548.8,
-            r: Some(0.5),
-        }
+        Point::new(410328.96, 1230548.8, Some(0.5))
     )
 }
 
@@ -87,41 +88,17 @@ fn kpt_rect(){
 
 #[test]
 fn point_is_circle_or_point() {
-    let p1 = Point {
-        x: 1.,
-        y: 2.,
-        r: Some(1.),
-    };
+    let p1 = Point::new(1., 2., Some(1.));
     assert!(p1.is_circle());
     assert!(!p1.is_point());
-    let p2 = Point {
-        x: 1.,
-        y: 2.,
-        r: None,
-    };
+    let p2 = Point::new(1., 2., None);
     assert!(p2.is_point());
     assert!(!p2.is_circle());
 }
 
 #[test]
 fn point_partial_eq() {
-    let p1 = Point {
-        x: 1.,
-        y: 1.,
-        r: Some(1.),
-    };
-    let p2 = Point {
-        x: 1.,
-        y: 1.,
-        r: Some(1.),
-    };
-    assert!(p1 == p2);
-}
-
-fn kpt() -> RrXml {
-    RrXml::from_file(KPT).unwrap()
-}
-
-fn kvzu() -> RrXml {
-    RrXml::from_file(KVZU).unwrap()
+    let p1 = Point::new(1., 1., Some(1.));
+    let p2 = Point::new(1., 1., Some(1.));
+    assert_eq!(p1, p2);
 }

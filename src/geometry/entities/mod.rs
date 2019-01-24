@@ -1,3 +1,4 @@
+use crate::geometry::checks::*;
 use crate::geometry::traits::intersectable::Intersectable;
 use crate::geometry::traits::rectangable::*;
 use dxf::entities::Circle as DxfCircle;
@@ -51,10 +52,33 @@ impl Rectangable for Entity {
 impl Intersectable for Entity {
     // todo
     fn intersect_entity(&self, entity: &Entity) -> bool {
-        unimplemented!()
-    }
+        match self {
+            // Point
+            Entity::Point(ref self_point) => match entity {
+                Entity::Point(ref other_point) => (),
+                Entity::Contur(ref other_contur) => (),
+            },
+            // Contur
+            Entity::Contur(ref self_contur) => match entity {
+                Entity::Point(ref other_point) => (),
+                Entity::Contur(ref other_contur) => {
+                    let self_points = &self_contur.points;
+                    let mut self_iter = self_points.iter();
+                    let mut self_first = self_iter.next().unwrap();
+                    for self_p in self_iter {
+                        let other_points = &other_contur.points;
+                        let mut other_iter = other_points.iter();
+                        let mut other_first = other_iter.next().unwrap();
+                        for other_p in other_iter {
+                            let self_segment = (self_first, self_p);
+                            let other_segment = (other_first, other_p);
+//                            if is_intersect(self_segment, other_segment) { return true };
+                        }
+                    }
+                },
+            },
+        }
 
-    fn intersect_entities(&self, entities: &Entities) -> bool {
         unimplemented!()
     }
 }

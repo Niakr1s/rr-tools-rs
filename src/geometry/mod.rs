@@ -3,7 +3,7 @@ use crate::mydxf::MyDxf;
 use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
 
-pub mod simple_checks;
+pub mod checks;
 #[macro_use]
 pub mod entities;
 pub mod traits;

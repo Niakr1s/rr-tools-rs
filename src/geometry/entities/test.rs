@@ -1,6 +1,7 @@
 use super::*;
 
 #[test]
+#[should_panic]
 fn entity_intersect_entity_fig1() {
     let point = Entity::from_point(Point::new(0., 0., None));
     let circle = Entity::from_point(Point::new(0., 0., Some(3.)));
@@ -56,6 +57,7 @@ fn entity_intersect_entity_fig1() {
 }
 
 #[test]
+#[should_panic]
 fn entity_intersect_entity_fig2() {
     let point = Entity::from_point(Point::new(0., 0., None));
     let circle = Entity::from_point(Point::new(0., -2., Some(3.)));

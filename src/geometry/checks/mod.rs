@@ -1,4 +1,4 @@
-use super::entities::*;
+use crate::geometry::entities::*;
 
 pub fn is_intersect(segment1: &(Point, Point), segment2: &(Point, Point)) -> bool {
     /* Returns True if intersect else False
@@ -165,7 +165,7 @@ fn circle_intersect(
         }
         (a * x0 + b * y0 + c) / t
     }
-    .abs();
+        .abs();
     res <= radius
 }
 

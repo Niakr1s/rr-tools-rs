@@ -42,6 +42,15 @@ fn lines_intersect_check3() {
 }
 
 #[test]
+fn same_lines_intersect() {
+    let seg1 = (
+        &Point::new(10., 0., None),
+        &Point::new(0., 0., None),
+    );
+    assert!(lines_intersect(seg1, seg1.clone()));
+}
+
+#[test]
 fn point_inside_contur_check1() {
     let p = Point::new(1., 1., None);
     let c = Contur {

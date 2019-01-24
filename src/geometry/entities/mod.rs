@@ -56,11 +56,9 @@ impl Intersectable for Entity {
         match self {
             // Point
             Entity::Point(ref self_point) => match entity {
-                Entity::Point(ref other_point) => return circle_intersect_circle(self_point, other_point),
+                Entity::Point(ref other_point) => circle_intersect_circle(self_point, other_point),
                 Entity::Contur(ref other_contur) => {
-                    println!("got {:?} and contur {:?}", self_point, other_contur);
                     if point_inside_contur(self_point, other_contur) { return true };
-                    println!("point_inside_contur failed");
                     // 3 check from rosreestr_tools Python
                     let other_points = &other_contur.points;
                     let mut other_iter = other_points.iter();
@@ -68,7 +66,8 @@ impl Intersectable for Entity {
                     for other_p in other_iter {
                         if circle_intersect_line(self_point, (other_first, other_p)) { return true };
                         other_first = other_p;
-                    }
+                    };
+                    false
                 },
             },
             // Contur
@@ -103,10 +102,10 @@ impl Intersectable for Entity {
                         },
                     }
                     self_first = self_p;
-                }
+                };
+                inpolygon
             },
-        };
-        false
+        }
     }
 }
 

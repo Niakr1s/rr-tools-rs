@@ -1,97 +1,34 @@
 use crate::geometry::entities::*;
 
+/// see https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+/// for logics explanation
 pub fn lines_intersect(line1: (&Point, &Point), line2: (&Point, &Point)) -> bool {
-    /* Returns True if intersect else False
-    line1 = (p1, q1), line2 = (p2, q2),
-    where p1,q1,p2,q2 - points like (x,y)->tuple, where x,y - coordinates */
-
     let ((p1, q1), (p2, q2)) = (line1, line2);
 
-    fn case1(p1: &Point, q1: &Point, p2: &Point, q2: &Point) -> bool {
-        /* 1. General Case:
-        – (p1, q1, p2) and (p1, q1, q2) have different orientations and
-        – (p2, q2, p1) and (p2, q2, q1) have different orientations. */
-
-        let subcase1 = is_on_left_or_right(p1, q1, p2) ^ is_on_left_or_right(p1, q1, q2);
-
-        if subcase1 {
-            let subcase2 = is_on_left_or_right(p2, q2, p1) ^ is_on_left_or_right(p2, q2, q1);
-            if subcase2 {
-                return true;
-            }
-        }
-        return false;
+    fn on_segment(p: &Point, q: &Point, r: &Point) -> bool {
+        q.x <= p.x.max(r.x) && q.x >= p.x.min(r.x) &&
+            q.y <= p.y.max(r.y) && q.y >= p.y.min(r.y)
     }
 
-    fn case2(p1: &Point, q1: &Point, p2: &Point, q2: &Point) -> bool {
-        /* 2. Special Case
-        – (p1, q1, p2), (p1, q1, q2), (p2, q2, p1)
-        and (p2, q2, q1) are all collinear and
-        – the x-projections of (p1, q1) and (p2, q2) intersect via case1
-        – the y-projections of (p1, q1) and (p2, q2) intersect via case1 */
-
-        let subcase1 = is_collinear(p1, q1, p2)
-            & is_collinear(p1, q1, q2)
-            & is_collinear(p2, q2, p1)
-            & is_collinear(p2, q2, q1);
-
-        if subcase1 {
-            let (xp1, xq1, xp2, xq2) = (
-                x_projection(p1),
-                x_projection(q1),
-                x_projection(p2),
-                x_projection(q2),
-            );
-            let subcase2 = case1(&xp1, &xq1, &xp2, &xq2);
-            if subcase2 {
-                let (yp1, yq1, yp2, yq2) = (
-                    y_projection(p1),
-                    y_projection(q1),
-                    y_projection(p2),
-                    y_projection(q2),
-                );
-                let subcase3 = case1(&yp1, &yq1, &yp2, &yq2);
-                if subcase3 {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    fn area(a: &Point, b: &Point, c: &Point) -> f64 {
-        (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)
-    }
-
-    fn is_on_left_or_right(a: &Point, b: &Point, c: &Point) -> bool {
-        area(a, b, c) > 0.
-    }
-
-    fn is_collinear(a: &Point, b: &Point, c: &Point) -> bool {
-        area(a, b, c) == 0.
-    }
-
-    fn x_projection(p: &Point) -> Point {
-        Point {
-            x: p.x,
-            y: 0.,
-            r: p.r,
+    fn orientation(p: &Point, q: &Point, r: &Point) -> i32 {
+        let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        if val == 0. { return 0 };
+        match val > 0. {
+            true => 1,
+            false => 2,
         }
     }
 
-    fn y_projection(p: &Point) -> Point {
-        Point {
-            x: 0.,
-            y: p.y,
-            r: p.r,
-        }
-    }
+    let o1 = orientation(p1, q1, p2);
+    let o2 = orientation(p1, q1, q2);
+    let o3 = orientation(p2, q2, p1);
+    let o4 = orientation(p2, q2, q1);
 
-    if case1(p1, q1, p2, q2) {
-        return true;
-    } else if case2(p1, q1, p2, q2) {
-        return true;
-    };
+    if o1 != o2 && o3 != o4 { return true };
+    if o1 == 0 && on_segment(p1, p2, q1) { return true };
+    if o2 == 0 && on_segment(p1, q2, q1) { return true };
+    if o3 == 0 && on_segment(p2, p1, q2) { return true };
+    if o4 == 0 && on_segment(p2, q1, q2) { return true };
     false
 }
 

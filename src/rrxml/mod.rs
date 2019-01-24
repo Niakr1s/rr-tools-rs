@@ -54,7 +54,7 @@ impl RrXml {
                 for p in d.descendants() {
                     if p.tag_name().name() == "Ordinate" {
                         let p = point_from_node_chunk(&p)?;
-                        c.add(p);
+                        c.push(p);
                     }
                 }
                 let c = match Entity::from_contur(c) {

@@ -13,11 +13,7 @@ fn triangle_polyline() {
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();
 
-    let mut contur = Contur::new();
-    contur.add(P1.clone());
-    contur.add(P2.clone());
-    contur.add(P3.clone());
-    contur.add(P1.clone());
+    let contur = contur![P1.clone(), P2.clone(), P3.clone(), P1.clone()];
     assert_eq!(my_dxf.entities, vec![Entity::Contur(contur),]);
 }
 
@@ -28,15 +24,9 @@ fn triangle_line() {
     assert!(my_dxf.is_ok(), "test file {} open error", path);
     let my_dxf = my_dxf.unwrap();
 
-    let mut contur1 = Contur::new();
-    contur1.add(P1.clone());
-    contur1.add(P2.clone());
-    let mut contur2 = Contur::new();
-    contur2.add(P2.clone());
-    contur2.add(P3.clone());
-    let mut contur3 = Contur::new();
-    contur3.add(P3.clone());
-    contur3.add(P1.clone());
+    let contur1 = contur![P1.clone(), P2.clone()];
+    let contur2 = contur![P2.clone(), P3.clone()];
+    let contur3 = contur![P3.clone(), P1.clone()];
 
     assert_eq!(
         my_dxf.entities,

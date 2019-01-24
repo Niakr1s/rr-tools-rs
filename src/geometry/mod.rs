@@ -4,6 +4,7 @@ use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
 
 pub mod simple_checks;
+#[macro_use]
 pub mod entities;
 pub mod traits;
 

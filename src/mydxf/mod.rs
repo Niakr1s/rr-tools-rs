@@ -34,24 +34,21 @@ fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
             EntityType::LwPolyline(lw_polyline) => {
                 let mut contur = Contur::new();
                 for p in lw_polyline.vertices {
-                    contur.add(Point::new(p.y, p.x, None)); // should be reversed
+                    contur.push(Point::new(p.y, p.x, None)); // should be reversed
                 }
                 Entity::Contur(contur)
             }
             EntityType::Polyline(polyline) => {
                 let mut contur = Contur::new();
                 for p in polyline.vertices {
-                    contur.add(Point::from_dxf_point(&p.location));
+                    contur.push(Point::from_dxf_point(&p.location));
                 }
                 Entity::Contur(contur)
             }
             EntityType::Line(line) => {
-                let mut contur = Contur::new();
                 let p1 = Point::from_dxf_point(&line.p1);
                 let p2 = Point::from_dxf_point(&line.p2);
-                contur.add(p1);
-                contur.add(p2);
-                Entity::Contur(contur)
+                Entity::Contur(contur![p1, p2])
             }
             EntityType::Circle(circle) => Entity::Point(Point::from_dxf_circle(&circle)),
             EntityType::ModelPoint(model_point) => {

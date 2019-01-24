@@ -121,7 +121,7 @@ impl Contur {
     pub fn new() -> Contur {
         Contur { points: vec![] }
     }
-    pub fn add(&mut self, p: Point) {
+    pub fn push(&mut self, p: Point) {
         self.points.push(p)
     }
     pub fn is_closed(&self) -> bool {

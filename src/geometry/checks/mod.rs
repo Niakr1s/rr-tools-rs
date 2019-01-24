@@ -107,21 +107,21 @@ pub fn point_inside_contur(p: &Point, c: &Contur) -> bool {
         if p.y > p1.y.min(p2.y) {
             if p.y <= p1.y.max(p2.y) {
                 if p.x <= p1.x.max(p2.x) {
-                    if p1.y != p2.y {
-                        let xinters = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
-                        if p.x <= xinters {
-                            inside = !inside;
-                        }
+                    let xinters = if p1.y != p2.y {
+                        Some((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x)
+                    } else { None };
+                    let x_le_xinters = match xinters {
+                        Some(xinters) => p.x <= xinters,
+                        None => false,
                     };
-                    if p1.x == p2.x {
+                    if p1.x == p2.x || x_le_xinters {
                         inside = !inside;
                     };
-                }
+                };
             }
         }
-        p1 = &p2;
+        p1 = p2;
     }
-
     inside
 }
 
@@ -133,14 +133,7 @@ pub fn circle_intersect_line(circle: &Point, line: (&Point, &Point)) -> bool {
     let &Point { x: x1, y: y1, .. } = line.0;
     let &Point { x: x2, y: y2, .. } = line.1;
 
-    fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
-        ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
-    }
-
-    let radius = match radius {
-        Some(r) => r,
-        None => 0.,
-    };
+    let radius = radius.unwrap_or(0.);
 
     let r1 = dist(x0, y0, x1, y1);
     let r2 = dist(x0, y0, x2, y2);
@@ -166,7 +159,15 @@ pub fn circle_intersect_line(circle: &Point, line: (&Point, &Point)) -> bool {
 }
 
 pub fn circle_intersect_circle(c1: &Point, c2: &Point) -> bool {
-    unimplemented!()
+    let &Point { x: x1, y: y1, r: r1 } = c1;
+    let &Point { x: x2, y: y2, r: r2 } = c2;
+    let distance = dist(x1, y1, x2, y2);
+    let max_distance = r1.unwrap_or(0.) + r2.unwrap_or(0.);
+    distance <= max_distance
+}
+
+fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+    ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
 }
 
 #[cfg(test)]

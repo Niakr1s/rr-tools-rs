@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn is_intersect_check1() {
+fn lines_intersect_check1() {
     // should be false
     let seg1 = (
         &Point::new(1., 1., None),
@@ -15,7 +15,7 @@ fn is_intersect_check1() {
 }
 
 #[test]
-fn is_intersect_check2() {
+fn lines_intersect_check2() {
     // should be true
     let seg1 = (
         &Point::new(10., 0., None),
@@ -28,7 +28,7 @@ fn is_intersect_check2() {
     assert!(lines_intersect(seg1, seg2));
 }
 #[test]
-fn is_intersect_check3() {
+fn lines_intersect_check3() {
     // should be false
     let seg1 = (
         &Point::new(-5., -5., None),
@@ -42,7 +42,7 @@ fn is_intersect_check3() {
 }
 
 #[test]
-fn inside_polygon_check1() {
+fn point_inside_contur_check1() {
     let p = Point::new(1., 1., None);
     let c = Contur {
         points: vec![
@@ -53,10 +53,20 @@ fn inside_polygon_check1() {
         ],
     };
     assert!(point_inside_contur(&p, &c));
+    let c = Contur {
+        points: vec![
+            Point::new(-3., -3., None),
+            Point::new(-3., 3., None),
+            Point::new(3., 3., None),
+            Point::new(3., -3., None),
+            Point::new(-3., -3., None)
+        ],
+    };
+    assert!(point_inside_contur(&p, &c));
 }
 
 #[test]
-fn inside_polygon_check2() {
+fn point_inside_contur_check2() {
     let p = Point::new(1., 1., None);
     let c = Contur {
         points: vec![
@@ -70,7 +80,7 @@ fn inside_polygon_check2() {
 }
 
 #[test]
-fn circle_intersect_check() {
+fn circle_intersect_line_check() {
     let c1 = Point::new(0., 0., Some(1.));
     let c2 = Point::new(0., 0., Some(2.));
     let c3 = Point::new(0., 0., Some(3.));
@@ -102,4 +112,17 @@ fn circle_intersect_check() {
     assert!(circle_intersect_line(&c3, (&poly3.0, &poly3.1)));
     assert!(!circle_intersect_line(&p, (&poly3.0, &poly3.1)));
 
+}
+
+#[test]
+fn circle_intersect_circle_check() {
+    let c1 = Point::new(0., 0., Some(2.));
+    let c2 = Point::new(4., 0., Some(2.));
+    assert!(circle_intersect_circle(&c1, &c2));
+    let c2 = Point::new(4., 0.01, Some(2.));
+    assert!(!circle_intersect_circle(&c1, &c2));
+    let c2 = Point::new(2., 0., None);
+    assert!(circle_intersect_circle(&c1, &c2));
+    let c2 = Point::new(0., 0., Some(1.));
+    assert!(circle_intersect_circle(&c1, &c2));
 }

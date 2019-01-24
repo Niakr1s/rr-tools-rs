@@ -11,7 +11,7 @@ fn is_intersect_check1() {
         &Point::new(1., 2., None),
         &Point::new(10., 2., None),
     );
-    assert!(!is_intersect(seg1, seg2));
+    assert!(!lines_intersect(seg1, seg2));
 }
 
 #[test]
@@ -25,7 +25,7 @@ fn is_intersect_check2() {
         &Point::new(0., 0., None),
         &Point::new(10., 10., None),
     );
-    assert!(is_intersect(seg1, seg2));
+    assert!(lines_intersect(seg1, seg2));
 }
 #[test]
 fn is_intersect_check3() {
@@ -38,7 +38,7 @@ fn is_intersect_check3() {
         &Point::new(1., 1., None),
         &Point::new(10., 10., None),
     );
-    assert!(!is_intersect(seg1, seg2));
+    assert!(!lines_intersect(seg1, seg2));
 }
 
 #[test]
@@ -52,7 +52,7 @@ fn inside_polygon_check1() {
             Point::new(-2., -2., None),
         ],
     };
-    assert!(inside_polygon(&p, &c));
+    assert!(point_inside_contur(&p, &c));
 }
 
 #[test]
@@ -66,7 +66,7 @@ fn inside_polygon_check2() {
             Point::new(-2., -2., None),
         ],
     };
-    assert!(!inside_polygon(&p, &c));
+    assert!(!point_inside_contur(&p, &c));
 }
 
 #[test]
@@ -87,19 +87,19 @@ fn circle_intersect_check() {
         Point::new(2., -1., None),
         Point::new(2., -0.001, None),
     );
-    assert!(!circle_intersect(&c1, &poly1.0, &poly1.1));
-    assert!(circle_intersect(&c2, &poly1.0, &poly1.1));
-    assert!(circle_intersect(&c3, &poly1.0, &poly1.1));
-    assert!(circle_intersect(&p, &poly1.0, &poly1.1));
+    assert!(!circle_intersect_line(&c1, (&poly1.0, &poly1.1)));
+    assert!(circle_intersect_line(&c2, (&poly1.0, &poly1.1)));
+    assert!(circle_intersect_line(&c3, (&poly1.0, &poly1.1)));
+    assert!(circle_intersect_line(&p, (&poly1.0, &poly1.1)));
 
-    assert!(!circle_intersect(&c1, &poly2.0, &poly2.1));
-    assert!(circle_intersect(&c2, &poly2.0, &poly2.1));
-    assert!(circle_intersect(&c3, &poly2.0, &poly2.1));
-    assert!(circle_intersect(&p, &poly2.0, &poly2.1));
+    assert!(!circle_intersect_line(&c1, (&poly2.0, &poly2.1)));
+    assert!(circle_intersect_line(&c2, (&poly2.0, &poly2.1)));
+    assert!(circle_intersect_line(&c3, (&poly2.0, &poly2.1)));
+    assert!(circle_intersect_line(&p, (&poly2.0, &poly2.1)));
 
-    assert!(!circle_intersect(&c1, &poly3.0, &poly3.1));
-    assert!(!circle_intersect(&c2, &poly3.0, &poly3.1));
-    assert!(circle_intersect(&c3, &poly3.0, &poly3.1));
-    assert!(!circle_intersect(&p, &poly3.0, &poly3.1));
+    assert!(!circle_intersect_line(&c1, (&poly3.0, &poly3.1)));
+    assert!(!circle_intersect_line(&c2, (&poly3.0, &poly3.1)));
+    assert!(circle_intersect_line(&c3, (&poly3.0, &poly3.1)));
+    assert!(!circle_intersect_line(&p, (&poly3.0, &poly3.1)));
 
 }

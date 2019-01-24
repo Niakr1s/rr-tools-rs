@@ -1,11 +1,11 @@
 use crate::geometry::entities::*;
 
-pub fn is_intersect(segment1: (&Point, &Point), segment2: (&Point, &Point)) -> bool {
+pub fn lines_intersect(line1: (&Point, &Point), line2: (&Point, &Point)) -> bool {
     /* Returns True if intersect else False
-    segment1 = (p1, q1), segment2 = (p2, q2),
+    line1 = (p1, q1), line2 = (p2, q2),
     where p1,q1,p2,q2 - points like (x,y)->tuple, where x,y - coordinates */
 
-    let ((p1, q1), (p2, q2)) = (segment1, segment2);
+    let ((p1, q1), (p2, q2)) = (line1, line2);
 
     fn case1(p1: &Point, q1: &Point, p2: &Point, q2: &Point) -> bool {
         /* 1. General Case:
@@ -95,7 +95,7 @@ pub fn is_intersect(segment1: (&Point, &Point), segment2: (&Point, &Point)) -> b
     false
 }
 
-pub fn inside_polygon(p: &Point, c: &Contur) -> bool {
+pub fn point_inside_contur(p: &Point, c: &Contur) -> bool {
     if !c.is_closed() {
         return false;
     };
@@ -125,13 +125,13 @@ pub fn inside_polygon(p: &Point, c: &Contur) -> bool {
     inside
 }
 
-pub fn circle_intersect(circle: &Point, start: &Point, end: &Point) -> bool {
+pub fn circle_intersect_line(circle: &Point, line: (&Point, &Point)) -> bool {
     /* algorithm:
     http://pers.narod.ru/algorithms/pas_dist_from_point_to_line.html */
 
     let &Point { x: x0, y: y0, r: radius } = circle;
-    let &Point { x: x1, y: y1, .. } = start;
-    let &Point { x: x2, y: y2, .. } = end;
+    let &Point { x: x1, y: y1, .. } = line.0;
+    let &Point { x: x2, y: y2, .. } = line.1;
 
     fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
         ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
@@ -163,6 +163,10 @@ pub fn circle_intersect(circle: &Point, start: &Point, end: &Point) -> bool {
     }
         .abs();
     res <= radius
+}
+
+pub fn circle_intersect_circle(c1: &Point, c2: &Point) -> bool {
+    unimplemented!()
 }
 
 #[cfg(test)]

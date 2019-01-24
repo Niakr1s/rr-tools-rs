@@ -52,16 +52,18 @@ impl Rectangable for Entity {
 impl Intersectable for Entity {
     // todo
     fn intersect_entity(&self, entity: &Entity) -> bool {
+        if self.can_not_intersect(entity) { return false };
         match self {
             // Point
             Entity::Point(ref self_point) => match entity {
-                Entity::Point(ref other_point) => (),
+                Entity::Point(ref other_point) => return self_point == other_point,
                 Entity::Contur(ref other_contur) => {
+                    // 3 check from rosreestr_tools Python
                     let other_points = &other_contur.points;
                     let mut other_iter = other_points.iter();
                     let mut other_first = other_iter.next().unwrap();
                     for other_p in other_iter {
-                        if circle_intersect(self_point, other_first, other_p) { return true };
+                        if circle_intersect_line(self_point, (other_first, other_p)) { return true };
                         other_first = other_p;
                     }
                 },
@@ -70,7 +72,9 @@ impl Intersectable for Entity {
             Entity::Contur(ref self_contur) => match entity {
                 Entity::Point(ref other_point) => (),
                 Entity::Contur(ref other_contur) => {
-                    // 1st check from rosreestr_tools Python implementation
+                    // flag for 4 check from rosreestr_tools Python
+                    let mut inpolygon = self_contur.is_closed();  // possibly true
+
                     let self_points = &self_contur.points;
                     let mut self_iter = self_points.iter();
                     let mut self_first = self_iter.next().unwrap();
@@ -78,10 +82,15 @@ impl Intersectable for Entity {
                         let other_points = &other_contur.points;
                         let mut other_iter = other_points.iter();
                         let mut other_first = other_iter.next().unwrap();
+                        // 4 check from rosreestr_tools Python
+                        if inpolygon && !point_inside_contur(other_first, self_contur) { inpolygon = false };
                         for other_p in other_iter {
                             let self_segment = (self_first, self_p);
                             let other_segment = (other_first, other_p);
-                            if is_intersect(self_segment, other_segment) { return true };
+                            // 1 check from rosreestr_tools Python
+                            if lines_intersect(self_segment, other_segment) { return true };
+                            // clone of 4 check before for loop, but for other_p
+                            if inpolygon && !point_inside_contur(other_p, self_contur) { inpolygon = false };
                             other_first = other_p;
                         }
                         self_first = self_p;

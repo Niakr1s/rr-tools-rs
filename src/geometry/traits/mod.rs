@@ -1,2 +1,2 @@
 pub mod rectangable;
-pub mod intersectable;
+pub mod relative;

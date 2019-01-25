@@ -1,6 +1,6 @@
 use crate::geometry::checks::*;
-use crate::geometry::traits::intersectable::Intersectable;
 use crate::geometry::traits::rectangable::*;
+use crate::geometry::traits::relative::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
 
@@ -49,8 +49,8 @@ impl Rectangable for Entity {
     }
 }
 
-impl Intersectable for Entity {
-    fn intersect_entity(&self, entity: &Entity) -> bool {
+impl Relative for Entity {
+    fn relate_entity(&self, entity: &Entity) -> bool {
         if self.can_not_intersect(entity) { return false };
 
         match self {

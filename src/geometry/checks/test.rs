@@ -135,3 +135,16 @@ fn circle_intersect_circle_check() {
     let c2 = Point::new(0., 0., Some(1.));
     assert!(circle_intersect_circle(&c1, &c2));
 }
+
+#[test]
+fn circle_inside_circle_check() {
+    let c1 = Point::new(1., 0., Some(0.99));
+    let c2 = Point::new(0., 0., Some(2.));
+    assert!(circle_inside_circle(&c1, &c2));
+    let c1 = Point::new(1., 0., Some(1.));
+    assert!(!circle_inside_circle(&c1, &c2));
+    let c1 = Point::new(1., 0., None);
+    assert!(circle_inside_circle(&c1, &c2));
+    let c1 = Point::new(4., 0., Some(1.));
+    assert!(!circle_inside_circle(&c1, &c2));
+}

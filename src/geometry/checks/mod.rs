@@ -121,6 +121,14 @@ pub fn circle_intersect_circle(c1: &Point, c2: &Point) -> bool {
     distance <= max_distance
 }
 
+/// checks c1 inside c2, not vice versa
+pub fn circle_inside_circle(c1: &Point, c2: &Point) -> bool {
+    let dist = dist(c1.x, c1.y, c2.x, c2.y);
+    let r1 = c1.r.unwrap_or(0.);
+    let r2 = c2.r.unwrap_or(0.);
+    dist + r1 < r2
+}
+
 fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
     ((x2 - x1).powi(2) + (y2 - y1).powi(2)).powf(0.5)
 }

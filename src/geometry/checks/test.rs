@@ -51,7 +51,7 @@ fn same_lines_intersect() {
 }
 
 #[test]
-fn point_inside_contur_check1() {
+fn point_inside_contur_check1_ok() {
     let p = Point::new(1., 1., None);
     let c = Contur {
         points: vec![
@@ -61,7 +61,7 @@ fn point_inside_contur_check1() {
             Point::new(-2., -2., None),
         ],
     };
-    assert!(point_inside_contur(&p, &c));
+    assert!(circle_inside_contur(&p, &c));
     let c = Contur {
         points: vec![
             Point::new(-3., -3., None),
@@ -71,11 +71,11 @@ fn point_inside_contur_check1() {
             Point::new(-3., -3., None)
         ],
     };
-    assert!(point_inside_contur(&p, &c));
+    assert!(circle_inside_contur(&p, &c));
 }
 
 #[test]
-fn point_inside_contur_check2() {
+fn point_inside_contur_check2_err() {
     let p = Point::new(1., 1., None);
     let c = Contur {
         points: vec![
@@ -85,7 +85,43 @@ fn point_inside_contur_check2() {
             Point::new(-2., -2., None),
         ],
     };
-    assert!(!point_inside_contur(&p, &c));
+    assert!(!circle_inside_contur(&p, &c));
+}
+
+#[test]
+fn circle_inside_contur_ok() {
+    let p = Point::new(0., 0., Some(2.99));
+    let c = Contur {
+        points: vec![
+            Point::new(-3., -3., None),
+            Point::new(-3., 3., None),
+            Point::new(3., 3., None),
+            Point::new(3., -3., None),
+            Point::new(-3., -3., None)
+        ],
+    };
+    assert!(circle_inside_contur(&p, &c));
+
+    let p = Point::new(0., 0., Some(3.01));
+    assert!(!circle_inside_contur(&p, &c));
+}
+
+#[test]
+fn circle_relate_contur_ok() {
+    let p = Point::new(0., 0., Some(2.99));
+    let c = Contur {
+        points: vec![
+            Point::new(-3., -3., None),
+            Point::new(-3., 3., None),
+            Point::new(3., 3., None),
+            Point::new(3., -3., None),
+            Point::new(-3., -3., None)
+        ],
+    };
+    assert!(!circle_relate_contur(&p, &c));
+
+    let p = Point::new(0., 0., Some(3.01));
+    assert!(circle_relate_contur(&p, &c));
 }
 
 #[test]

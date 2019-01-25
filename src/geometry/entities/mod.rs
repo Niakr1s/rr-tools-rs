@@ -50,36 +50,55 @@ impl Rectangable for Entity {
 }
 
 impl Relative for Entity {
-    fn relate_entity(&self, entity: &Entity) -> bool {
-        if self.can_not_intersect(entity) { return false };
+    fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
+        if self.can_not_intersect(entity) { return None };
 
         match self {
             // Point
             Entity::Point(ref self_point) => match entity {
                 Entity::Point(ref other_point) => {
                     // simple circles check
-                    circle_intersect_circle(self_point, other_point)
+                    match circle_inside_circle(self_point, other_point) ||
+                        circle_inside_circle(other_point, self_point) {
+                        true => Some(Relation::Inside),
+                        false => match circle_intersect_circle(self_point, other_point) {
+                            true => Some(Relation::Intersect),
+                            false => None,
+                        },
+                    }
                 },
                 Entity::Contur(ref other_contur) => {
-                    if point_inside_contur(self_point, other_contur) { return true };
+                    if point_inside_contur(self_point, other_contur) { return Some(Relation::Inside) };
+
+                    let mut other_inpolygon = true;  // possibly true
+                    let mut intersect = false;
 
                     let other_points = &other_contur.points;
                     let mut other_iter = other_points.iter();
                     let mut other_first = other_iter.next().unwrap();
 
                     for other_p in other_iter {
-                        if circle_intersect_line(self_point, (other_first, other_p)) { return true };
+                        intersect_switch(&mut intersect, circle_relate_line(self_point, (other_first, other_p)));
+                        inpolygon_switch(&mut other_inpolygon, circle_inside_circle(other_p, self_point));
+
                         other_first = other_p;
                     };
 
-                    false
+                    match other_inpolygon {
+                        true => Some(Relation::Inside),
+                        false => match intersect {
+                            true => Some(Relation::Intersect),
+                            false => None
+                        },
+                    }
                 },
             },
             // Contur
             Entity::Contur(ref self_contur) => {
                 // flags for checking other polygon in self and vice versa
                 let mut other_inpolygon = self_contur.is_closed();  // possibly true
-                let mut self_inpolygon = None;  // None if entity is Entity::Point
+                let mut self_inpolygon = true;
+                let mut intersect = false;
 
                 let self_points = &self_contur.points;
                 let mut self_iter = self_points.iter();
@@ -88,11 +107,12 @@ impl Relative for Entity {
                 for self_p in self_iter {
                     match entity {
                         Entity::Point(ref other_point) => {
-                            if other_inpolygon { other_inpolygon = point_inside_contur(other_point, self_contur) };
-                            if circle_intersect_line(other_point, (self_first, self_p)) { return true };
+                            inpolygon_switch(&mut other_inpolygon, point_inside_contur(other_point, self_contur));
+                            inpolygon_switch(&mut self_inpolygon, circle_inside_circle(self_p, other_point));
+                            intersect_switch(&mut intersect, circle_relate_line(other_point, (self_first, self_p)));
                         },
                         Entity::Contur(ref other_contur) => {
-                            let mut self_inpolygon_inner = other_contur.is_closed();
+                            let mut self_inpolygon_loop = other_contur.is_closed();
 
                             let other_points = &other_contur.points;
                             let mut other_iter = other_points.iter();
@@ -102,32 +122,49 @@ impl Relative for Entity {
                                 let self_segment = (self_first, self_p);
                                 let other_segment = (other_first, other_p);
                                 // immediatly return if lines are intersecting each other
-                                if lines_intersect(self_segment, other_segment) { return true };
+                                intersect_switch(&mut intersect, lines_intersect(self_segment, other_segment));
 
                                 // updating inpolygon flags
-                                if self_inpolygon_inner { self_inpolygon_inner = point_inside_contur(self_first, other_contur) };
-                                if other_inpolygon { other_inpolygon = point_inside_contur(other_first, self_contur) };
+                                inpolygon_switch(&mut self_inpolygon_loop, point_inside_contur(self_first, other_contur));
+                                inpolygon_switch(&mut other_inpolygon, point_inside_contur(other_first, self_contur));
 
                                 other_first = other_p;
                             };
 
                             // updating outer flag
-                            self_inpolygon = match self_inpolygon {
-                                Some(b) => Some(b && self_inpolygon_inner),
-                                None => Some(self_inpolygon_inner),
-                            };
+                            self_inpolygon = self_inpolygon && self_inpolygon_loop;
                         },
                     }
                     self_first = self_p;
                 };
 
-                match self_inpolygon {
-                    Some(b) => b || other_inpolygon,
-                    None => other_inpolygon,
+                println!("other_inpolygon: {}, self_inpolygon: {:?}", other_inpolygon, self_inpolygon);
+
+                let inpolygon_joint = self_inpolygon || other_inpolygon;
+                match inpolygon_joint {
+                    true => Some(Relation::Inside),
+                    false => match intersect {
+                        true => Some(Relation::Intersect),
+                        false => None,
+                    }
                 }
             },
         }
     }
+}
+
+fn inpolygon_switch(inpolygon: &mut bool, condition: bool) {
+    if *inpolygon {
+        *inpolygon = condition;
+    }
+}
+
+fn intersect_switch(intersect: &mut bool, condition: bool) {
+    if !*intersect {
+        if condition {
+            *intersect = true;
+        }
+    };
 }
 
 #[derive(Debug, PartialEq, Clone)]

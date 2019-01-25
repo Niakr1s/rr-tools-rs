@@ -1,3 +1,4 @@
+use crate::geometry::traits::relative::*;
 use super::*;
 
 #[test]
@@ -24,35 +25,35 @@ fn entity_relate_entity_fig1() {
         Point::new(0.5, -0.5, None)
     ]).unwrap();
 
-    assert!(point.relate_entity(&point));
-    assert!(point.relate_entity(&circle));
-    assert!(point.relate_entity(&closed_contur));
-    assert!(!point.relate_entity(&open_outer_contur));
-    assert!(!point.relate_entity(&open_inner_contur));
+    assert_eq!(point.relate_entity(&point), Some(Relation::Intersect));
+    assert_eq!(point.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(point.relate_entity(&closed_contur), Some(Relation::Inside));
+    assert_eq!(point.relate_entity(&open_outer_contur), None);
+    assert_eq!(point.relate_entity(&open_inner_contur), None);
 
-    assert!(circle.relate_entity(&point));
-    assert!(circle.relate_entity(&circle));
-    assert!(circle.relate_entity(&closed_contur));
-    assert!(circle.relate_entity(&open_outer_contur));
-    assert!(circle.relate_entity(&open_inner_contur));
+    assert_eq!(circle.relate_entity(&point), Some(Relation::Inside));
+    assert_eq!(circle.relate_entity(&circle), Some(Relation::Intersect));
+    assert_eq!(circle.relate_entity(&closed_contur), Some(Relation::Inside));
+    assert_eq!(circle.relate_entity(&open_outer_contur), Some(Relation::Inside));
+    assert_eq!(circle.relate_entity(&open_inner_contur), Some(Relation::Inside));
 
-    assert!(closed_contur.relate_entity(&point));
-    assert!(closed_contur.relate_entity(&circle));
-    assert!(closed_contur.relate_entity(&closed_contur));
-    assert!(!closed_contur.relate_entity(&open_outer_contur));
-    assert!(closed_contur.relate_entity(&open_inner_contur));
+    assert_eq!(closed_contur.relate_entity(&point), Some(Relation::Inside));
+    assert_eq!(closed_contur.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(closed_contur.relate_entity(&closed_contur), Some(Relation::Intersect));
+    assert_eq!(closed_contur.relate_entity(&open_outer_contur), None);
+    assert_eq!(closed_contur.relate_entity(&open_inner_contur), Some(Relation::Inside));
 
-    assert!(!open_outer_contur.relate_entity(&point));
-    assert!(open_outer_contur.relate_entity(&circle));
-    assert!(!open_outer_contur.relate_entity(&closed_contur));
-    assert!(open_outer_contur.relate_entity(&open_outer_contur));
-    assert!(!open_outer_contur.relate_entity(&open_inner_contur));
+    assert_eq!(open_outer_contur.relate_entity(&point), None);
+    assert_eq!(open_outer_contur.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(open_outer_contur.relate_entity(&closed_contur), None);
+    assert_eq!(open_outer_contur.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(open_outer_contur.relate_entity(&open_inner_contur), None);
 
-    assert!(!open_inner_contur.relate_entity(&point));
-    assert!(open_inner_contur.relate_entity(&circle));
-    assert!(open_inner_contur.relate_entity(&closed_contur));
-    assert!(!open_inner_contur.relate_entity(&open_outer_contur));
-    assert!(open_inner_contur.relate_entity(&open_inner_contur));
+    assert_eq!(open_inner_contur.relate_entity(&point), None);
+    assert_eq!(open_inner_contur.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(open_inner_contur.relate_entity(&closed_contur), Some(Relation::Inside));
+    assert_eq!(open_inner_contur.relate_entity(&open_outer_contur), None);
+    assert_eq!(open_inner_contur.relate_entity(&open_inner_contur), Some(Relation::Intersect));
 }
 
 #[test]
@@ -79,38 +80,45 @@ fn entity_relate_entity_fig2() {
         Point::new(0.5, -1.5, None)
     ]).unwrap();
 
-    assert!(point.relate_entity(&point));
-    assert!(point.relate_entity(&circle));
-    assert!(point.relate_entity(&closed_contur));
-    assert!(point.relate_entity(&open_outer_contur));
-    assert!(!point.relate_entity(&open_inner_contur));
+    assert_eq!(point.relate_entity(&point), Some(Relation::Intersect));
+    assert_eq!(point.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(point.relate_entity(&closed_contur), Some(Relation::Inside));
+    assert_eq!(point.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(point.relate_entity(&open_inner_contur), None);
 
-    assert!(circle.relate_entity(&point));
-    assert!(circle.relate_entity(&circle));
-    assert!(circle.relate_entity(&closed_contur));
-    assert!(circle.relate_entity(&open_outer_contur));
-    assert!(circle.relate_entity(&open_inner_contur));
+    assert_eq!(circle.relate_entity(&point), Some(Relation::Inside));
+    assert_eq!(circle.relate_entity(&circle), Some(Relation::Intersect));
+    assert_eq!(circle.relate_entity(&closed_contur), Some(Relation::Intersect));
+    assert_eq!(circle.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(circle.relate_entity(&open_inner_contur), Some(Relation::Inside));
 
-    assert!(closed_contur.relate_entity(&point));
-    assert!(closed_contur.relate_entity(&circle));
-    assert!(closed_contur.relate_entity(&closed_contur));
-    assert!(closed_contur.relate_entity(&open_outer_contur));
-    assert!(closed_contur.relate_entity(&open_inner_contur));
+    assert_eq!(closed_contur.relate_entity(&point), Some(Relation::Inside));
+    assert_eq!(closed_contur.relate_entity(&circle), Some(Relation::Intersect));
+    assert_eq!(closed_contur.relate_entity(&closed_contur), Some(Relation::Intersect));
+    assert_eq!(closed_contur.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(closed_contur.relate_entity(&open_inner_contur), Some(Relation::Intersect));
 
-    assert!(open_outer_contur.relate_entity(&point));
-    assert!(open_outer_contur.relate_entity(&circle));
-    assert!(open_outer_contur.relate_entity(&closed_contur));
-    assert!(open_outer_contur.relate_entity(&open_outer_contur));
-    assert!(open_outer_contur.relate_entity(&open_inner_contur));
+    assert_eq!(open_outer_contur.relate_entity(&point), Some(Relation::Intersect));
+    assert_eq!(open_outer_contur.relate_entity(&circle), Some(Relation::Intersect));
+    assert_eq!(open_outer_contur.relate_entity(&closed_contur), Some(Relation::Intersect));
+    assert_eq!(open_outer_contur.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(open_outer_contur.relate_entity(&open_inner_contur), Some(Relation::Intersect));
 
-    assert!(!open_inner_contur.relate_entity(&point));
-    assert!(open_inner_contur.relate_entity(&circle));
-    assert!(open_inner_contur.relate_entity(&closed_contur));
-    assert!(open_inner_contur.relate_entity(&open_outer_contur));
-    assert!(open_inner_contur.relate_entity(&open_inner_contur));
+    assert_eq!(open_inner_contur.relate_entity(&point), None);
+    assert_eq!(open_inner_contur.relate_entity(&circle), Some(Relation::Inside));
+    assert_eq!(open_inner_contur.relate_entity(&closed_contur), Some(Relation::Intersect));
+    assert_eq!(open_inner_contur.relate_entity(&open_outer_contur), Some(Relation::Intersect));
+    assert_eq!(open_inner_contur.relate_entity(&open_inner_contur), Some(Relation::Intersect));
 }
 
 #[test]
 fn eq_points_ref() {
     assert_eq!(&Point::new(1.0, 1.0, Some(1.0)), &Point::new(1.0, 1.0, Some(1.0)))
+}
+
+#[test]
+fn intersect_switch_ok() {
+    let mut intersect = false;
+    intersect_switch(&mut intersect, true);
+    assert_eq!(intersect, true);
 }

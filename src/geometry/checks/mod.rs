@@ -80,9 +80,9 @@ pub fn point_inside_contur(p: &Point, c: &Contur) -> bool {
     inside
 }
 
-pub fn circle_intersect_line(circle: &Point, line: (&Point, &Point)) -> bool {
-    /* algorithm:
-    http://pers.narod.ru/algorithms/pas_dist_from_point_to_line.html */
+/// algorithm:
+/// http://pers.narod.ru/algorithms/pas_dist_from_point_to_line.html
+pub fn circle_relate_line(circle: &Point, line: (&Point, &Point)) -> bool {
 
     let &Point { x: x0, y: y0, r: radius } = circle;
     let &Point { x: x1, y: y1, .. } = line.0;

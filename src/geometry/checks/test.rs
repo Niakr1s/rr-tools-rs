@@ -106,20 +106,20 @@ fn circle_intersect_line_check() {
         Point::new(2., -1., None),
         Point::new(2., -0.001, None),
     );
-    assert!(!circle_intersect_line(&c1, (&poly1.0, &poly1.1)));
-    assert!(circle_intersect_line(&c2, (&poly1.0, &poly1.1)));
-    assert!(circle_intersect_line(&c3, (&poly1.0, &poly1.1)));
-    assert!(circle_intersect_line(&p, (&poly1.0, &poly1.1)));
+    assert!(!circle_relate_line(&c1, (&poly1.0, &poly1.1)));
+    assert!(circle_relate_line(&c2, (&poly1.0, &poly1.1)));
+    assert!(circle_relate_line(&c3, (&poly1.0, &poly1.1)));
+    assert!(circle_relate_line(&p, (&poly1.0, &poly1.1)));
 
-    assert!(!circle_intersect_line(&c1, (&poly2.0, &poly2.1)));
-    assert!(circle_intersect_line(&c2, (&poly2.0, &poly2.1)));
-    assert!(circle_intersect_line(&c3, (&poly2.0, &poly2.1)));
-    assert!(circle_intersect_line(&p, (&poly2.0, &poly2.1)));
+    assert!(!circle_relate_line(&c1, (&poly2.0, &poly2.1)));
+    assert!(circle_relate_line(&c2, (&poly2.0, &poly2.1)));
+    assert!(circle_relate_line(&c3, (&poly2.0, &poly2.1)));
+    assert!(circle_relate_line(&p, (&poly2.0, &poly2.1)));
 
-    assert!(!circle_intersect_line(&c1, (&poly3.0, &poly3.1)));
-    assert!(!circle_intersect_line(&c2, (&poly3.0, &poly3.1)));
-    assert!(circle_intersect_line(&c3, (&poly3.0, &poly3.1)));
-    assert!(!circle_intersect_line(&p, (&poly3.0, &poly3.1)));
+    assert!(!circle_relate_line(&c1, (&poly3.0, &poly3.1)));
+    assert!(!circle_relate_line(&c2, (&poly3.0, &poly3.1)));
+    assert!(circle_relate_line(&c3, (&poly3.0, &poly3.1)));
+    assert!(!circle_relate_line(&p, (&poly3.0, &poly3.1)));
 
 }
 

@@ -94,10 +94,9 @@ pub fn circle_inside_contur(p: &Point, c: &Contur) -> bool {
 
 pub fn circle_relate_contur(p: &Point, c: &Contur) -> bool {
     let other_points = &c.points;
-    let mut other_iter = other_points.iter();
-    let mut other_first = other_iter.next().unwrap();
 
-    for other_p in other_iter {
+    let mut other_first = other_points.first().unwrap();
+    for other_p in other_points {
         if circle_relate_line(p, (other_first, other_p)) { return true };
         other_first = other_p;
     };

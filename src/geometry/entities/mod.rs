@@ -54,7 +54,6 @@ impl Relative for Entity {
         if self.can_not_intersect(entity) { return None };
 
         match self {
-            // Point
             Entity::Point(ref self_point) => match entity {
                 Entity::Point(ref other_point) => {
                     match circle_inside_circle(self_point, other_point) {
@@ -67,32 +66,29 @@ impl Relative for Entity {
                 },
 
                 Entity::Contur(ref other_contur) => {
-                    if circle_inside_contur(self_point, other_contur) { return Some(Relation::Inside) };  // todo some problem with circle
+                    if circle_inside_contur(self_point, other_contur) { return Some(Relation::Inside) };
 
                     let other_points = &other_contur.points;
-                    let mut other_iter = other_points.iter();
-                    let mut other_first = other_iter.next().unwrap();
 
-                    for other_p in other_iter {
+                    let mut other_first = other_points.first().unwrap();
+                    for other_p in other_points {
                         if circle_relate_line(self_point, (other_first, other_p)) { return Some(Relation::Intersect) };
                         other_first = other_p;
                     };
-
                     None
-
                 },
             },
 
-            // Contur
             Entity::Contur(ref self_contur) => {
+                // true when ALL true, so we can not return from loops
                 let mut inpolygon = true;
+                // true when ANY true
                 let mut intersect = false;
 
                 let self_points = &self_contur.points;
-                let mut self_iter = self_points.iter();
-                let mut self_first = self_iter.next().unwrap();
 
-                for self_p in self_iter {
+                let mut self_first = self_points.first().unwrap();
+                for self_p in self_points {
                     match entity {
                         Entity::Point(ref other_point) => {
                             if circle_inside_contur(other_point, self_contur) { return Some(Relation::Intersect) };
@@ -103,20 +99,17 @@ impl Relative for Entity {
                         Entity::Contur(ref other_contur) => {
                             inpolygon_switch(&mut inpolygon, circle_inside_contur(self_p, other_contur));
 
+                            // If other contur lies inside self contur -> self contur is intersecting it
                             let mut other_inpolygon = self_contur.is_closed();
 
                             let other_points = &other_contur.points;
-                            let mut other_iter = other_points.iter();
-                            let mut other_first = other_iter.next().unwrap();
 
-                            for other_p in other_iter {
+                            let mut other_first = other_points.first().unwrap();
+                            for other_p in other_points {
                                 let self_segment = (self_first, self_p);
                                 let other_segment = (other_first, other_p);
                                 inpolygon_switch(&mut other_inpolygon, circle_inside_contur(other_p, self_contur));
-                                intersect_switch(&mut intersect, lines_intersect(self_segment, other_segment));
-
-
-
+                                if lines_intersect(self_segment, other_segment) { return Some(Relation::Intersect) };
                                 other_first = other_p;
                             };
                             if other_inpolygon { intersect = true };

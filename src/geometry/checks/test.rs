@@ -125,7 +125,7 @@ fn circle_relate_contur_ok() {
 }
 
 #[test]
-fn circle_intersect_line_check() {
+fn circle_relate_line_check() {
     let c1 = Point::new(0., 0., Some(1.));
     let c2 = Point::new(0., 0., Some(2.));
     let c3 = Point::new(0., 0., Some(3.));
@@ -156,7 +156,16 @@ fn circle_intersect_line_check() {
     assert!(!circle_relate_line(&c2, (&poly3.0, &poly3.1)));
     assert!(circle_relate_line(&c3, (&poly3.0, &poly3.1)));
     assert!(!circle_relate_line(&p, (&poly3.0, &poly3.1)));
+}
 
+#[test]
+fn circle_relate_line_inside() {
+    let c = Point::new(0., 0., Some(3.));
+    let poly = (
+        Point::new(1., 1., None),
+        Point::new(0., 0., None),
+    );
+    assert!(circle_relate_line(&c, (&poly.0, &poly.1)));
 }
 
 #[test]

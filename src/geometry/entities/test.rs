@@ -221,7 +221,7 @@ fn entities_relate_entity_fig4() {
         Point::new(-8., -15., None),
         Point::new(-8., -1., None)
     ]).unwrap();
-    assert_eq!(mydxf_mock.relate_entity(&outer), Some(Relation::Inside));
+//    assert_eq!(mydxf_mock.relate_entity(&outer), Some(Relation::Inside));
 
     let mut rrxml_mock = vec![outer];
 
@@ -232,7 +232,7 @@ fn entities_relate_entity_fig4() {
         Point::new(-6., -10., None),
         Point::new(-6., -5., None)
     ]).unwrap());
-    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), None);
+//    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), None);
 
     rrxml_mock.push(Entity::from_contur(contur![
         Point::new(-4., -6., None),
@@ -241,7 +241,7 @@ fn entities_relate_entity_fig4() {
         Point::new(-5., -10., None),
         Point::new(-4., -6., None)
     ]).unwrap());
-    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+//    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
 
     rrxml_mock.push(Entity::from_contur(contur![
         Point::new(5., -4., None),
@@ -254,21 +254,21 @@ fn entities_relate_entity_fig4() {
 
     // pushing some circle outside contur (but within "hole" contur)
     mydxf_mock.push(Entity::from_point(Point::new(8., -7., Some(1.))));
-//    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));  // todo
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));  // todo
 
     // pushing some circle outside outer contur
     mydxf_mock.pop();
     mydxf_mock.push(Entity::from_point(Point::new(23., -7., Some(1.))));
-    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+//    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
 
     // pushing some circle inside outer
     mydxf_mock.pop();
     mydxf_mock.push(Entity::from_point(Point::new(5., -15., Some(1.))));
-    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+//    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
 
     let faraway_line = vec![Entity::from_contur(contur![
         Point::new(20.,20.,None),
         Point::new(20.,20.,None)
     ]).unwrap()];
-    assert_eq!(faraway_line.relate_entities(&rrxml_mock), None);
+//    assert_eq!(faraway_line.relate_entities(&rrxml_mock), None);
 }

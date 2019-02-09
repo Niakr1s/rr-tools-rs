@@ -14,7 +14,9 @@ fn test_dxf() {
     println!("{:?}", mydxf);
 
 
-    let res_block = check_mydxf_in_rrxml(&mydxf, &rr_block);
+    let res_block = check_mydxf_in_rrxml(&mydxf, &rr_block).unwrap();
+    assert_eq!(res_block.len(), 4);
 
     let res_parcel = check_mydxf_in_rrxml(&mydxf, &rr_parcel);
+    assert!(res_parcel.is_none());
 }

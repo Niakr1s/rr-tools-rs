@@ -28,6 +28,12 @@ impl Rectangable for MyDxf {
     }
 }
 
+impl Relative for MyDxf {
+    fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
+        self.entities.relate_entity(entity)
+    }
+}
+
 fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
     let mut entities = vec![];
     for e in drawing.entities {

@@ -264,11 +264,11 @@ fn entities_relate_entity_fig4() {
     // pushing some circle inside outer
     mydxf_mock.pop();
     mydxf_mock.push(Entity::from_point(Point::new(5., -15., Some(1.))));
-    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Intersect));
 
     let faraway_line = vec![Entity::from_contur(contur![
-        Point::new(1000.,1000.,None),
-        Point::new(2000.,2000.,None)
+        Point::new(20.,20.,None),
+        Point::new(20.,20.,None)
     ]).unwrap()];
     assert_eq!(faraway_line.relate_entities(&rrxml_mock), None);
 }

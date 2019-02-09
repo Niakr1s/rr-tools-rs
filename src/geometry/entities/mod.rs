@@ -19,27 +19,20 @@ impl Rectangable for Entities {
 impl Relative for Entities {
     fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
         let mut all_inside: Option<bool> = None;
+        let mut checks = vec![];
         for self_entity in self {
-            match self_entity.relate_entity(entity) {
-                Some(Relation::Inside) => match all_inside {
-                    Some(false) => return Some(Relation::Intersect),
-                    None => all_inside = Some(true),
-                    _ => (),
-                },
-                Some(Relation::Intersect) => return Some(Relation::Intersect),
-                None => match all_inside {
-                    Some(true) => all_inside = return Some(Relation::Intersect),
-                    None => all_inside = Some(false),
-                    _ => (),
-                },
-            }
+            let check = self_entity.relate_entity(entity);
+            if let Some(Relation::Intersect) = check {
+                println!("intersect!");
+                return Some(Relation::Intersect);
+            };
+            checks.push(check);
         };
 
-        match all_inside {
-            Some(true) => Some(Relation::Inside),
-            Some(false) => Some(Relation::Intersect),
-            None => None,
-        }
+        if checks.iter().all(|x| *x == Some(Relation::Inside)) { return Some(Relation::Inside) };
+        if checks.iter().all(|x| *x == None) { return None };
+
+        Some(Relation::Intersect)
     }
 }
 

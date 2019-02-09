@@ -1,5 +1,6 @@
 use crate::geometry::entities::*;
 use crate::geometry::traits::rectangable::Rectangable;
+use crate::geometry::traits::relative::Relative;
 use crate::mydxf::MyDxf;
 use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
@@ -24,14 +25,10 @@ fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
 }
 
 fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
-    // todo
-//    for mydxf_entity in &mydxf.entities {
-//        for parcel_entity in parcel.entities {
-//
-//        }
-//    }
-
-    unimplemented!()
+    match mydxf.relate_entities(&parcel.entities) {
+        Some(_) => true,
+        None => false,
+    }
 }
 
 #[cfg(test)]

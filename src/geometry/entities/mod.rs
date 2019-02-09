@@ -22,15 +22,30 @@ impl Relative for Entities {
         for self_entity in self {
             let check = self_entity.relate_entity(entity);
             if let Some(Relation::Intersect) = check {
-                println!("intersect!");
+                debug!("intersect!");
                 return Some(Relation::Intersect);
             };
             checks.push(check);
         };
+        debug!("got checks: {:?}", checks);
 
-        println!("got checks: {:?}", checks);
+        if checks.iter().all(|x| *x == None) { return None };
 
-//        if checks.iter().all(|x| *x == Some(Relation::Inside)) { return Some(Relation::Inside) };
+        Some(Relation::Inside)
+    }
+
+    fn relate_entities(&self, entities: &Entities) -> Option<Relation> {
+        let mut checks = vec![];
+        for self_entity in self {
+            let check = self_entity.relate_entities(entities);
+            if let Some(Relation::Intersect) = check {
+                debug!("intersect!");
+                return Some(Relation::Intersect);
+            };
+            checks.push(check);
+        };
+        debug!("got checks: {:?}", checks);
+
         if checks.iter().all(|x| *x == None) { return None };
 
         Some(Relation::Inside)
@@ -148,6 +163,25 @@ impl Relative for Entity {
                 }
             },
         }
+    }
+
+    fn relate_entities(&self, entities: &Entities) -> Option<Relation> {
+        let mut in_hole_counter = 0;
+        debug!("\nentities len: {}", entities.len());
+        for e in entities {
+            let relate = self.relate_entity(e);
+            debug!("got self.relate_entity {:?}", relate);
+            match relate {
+                Some(Relation::Intersect) => {
+                    return Some(Relation::Intersect);
+                },
+                Some(Relation::Inside) => in_hole_counter += 1,
+                None => continue,
+            }
+        };
+        debug!("in hole_counter: {}", in_hole_counter);
+        if in_hole_counter % 2 == 1 { return Some(Relation::Inside) };
+        None
     }
 }
 

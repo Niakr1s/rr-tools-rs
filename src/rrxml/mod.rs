@@ -13,7 +13,7 @@ use super::geometry::entities::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RrXml {
     pub path: String,
     pub typ: String,

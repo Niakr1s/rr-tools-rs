@@ -10,10 +10,10 @@ pub mod checks;
 pub mod entities;
 pub mod traits;
 
-pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<&RrXml>) -> Option<Vec<Parcel>> {
+pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<RrXml>) -> Option<Vec<Parcel>> {
     let mut parcels = vec![];
     for rrxml in rrxmls {
-        if let Some(ref mut parcel) = check_mydxf_in_rrxml(mydxf, rrxml) {
+        if let Some(ref mut parcel) = check_mydxf_in_rrxml(mydxf, &rrxml) {
             parcels.append(parcel);
         }
     };

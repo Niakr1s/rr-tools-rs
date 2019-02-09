@@ -3,12 +3,10 @@ use crate::geometry::traits::rectangable::*;
 use roxmltree::{self, Document};
 use std::cmp::PartialEq;
 use std::error::Error;
-use std::fmt;
-use std::fmt::Display;
-use std::fmt::Formatter;
-use std::fs::File;
-use std::io;
-use std::io::Read;
+use std::fmt::{self, Display, Formatter};
+use std::fs::{self, File};
+use std::io::{self, Read};
+use std::path::{Path, PathBuf};
 use super::geometry::entities::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
@@ -108,6 +106,21 @@ impl RrXml {
 
     pub fn len(&self) -> usize {
         self.parcels.len()
+    }
+
+    pub fn rename_file(&self) -> io::Result<()> {
+        fs::rename(&self.path, &self.new_filename())
+    }
+
+    fn new_filename(&self) -> String {
+        let path = Path::new(&self.path);
+        let new_filename = format!("{} {}", self.typ, self.number.replace(":", " "));
+        let mut new_path = path.with_file_name(new_filename);
+        if let Some(ext) = path.extension() {
+            new_path.set_extension(ext);
+        }
+        debug!("old: {:?}, new: {:?}", path, new_path);
+        format!("{} {}", self.typ, new_path.to_str().unwrap())
     }
 
 }

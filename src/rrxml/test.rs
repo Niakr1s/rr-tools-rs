@@ -1,7 +1,7 @@
 use super::*;
 
-const KVZU: &str = r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml";
 const KPT: &str = r"src\test_files\xmls\KPT CadastralBlock 77 03 0009007.xml";
+const KVZU: &str = r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml";
 
 const POINT_STR: &str = r#"<SpelementUnit TypeUnit="Точка" SuNmb="17">
                                 <Ordinate X="410328.96" Y="1230548.8" OrdNmb="1" />
@@ -101,4 +101,15 @@ fn point_partial_eq() {
     let p1 = Point::new(1., 1., Some(1.));
     let p2 = Point::new(1., 1., Some(1.));
     assert_eq!(p1, p2);
+}
+
+#[test]
+fn new_filename() {
+    let rr = kpt();
+    let new_filename = rr.new_filename();
+    assert!(rr.new_filename().ends_with("KPT 77 03 0009007.xml"));
+
+    let rr = kvzu();
+    let new_filename = rr.new_filename();
+    assert!(rr.new_filename().ends_with("KVZU 21 01 010206 115.xml"));
 }

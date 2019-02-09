@@ -34,7 +34,7 @@ impl Relative for Entities {
                 },
             }
         };
-        println!("dfasdflkjasdlfkj;asdlkfj");
+
         match all_inside {
             Some(true) => Some(Relation::Inside),
             Some(false) => Some(Relation::Intersect),

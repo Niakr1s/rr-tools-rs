@@ -196,8 +196,16 @@ fn relate_entities_fig3() {
     ]).unwrap();
 
     assert_eq!(blue_line.relate_entities(&entities), Some(Relation::Intersect));
+
+    let faraway_line = Entity::from_contur(contur![
+        Point::new(1000.,1000.,None),
+        Point::new(2000.,2000.,None)
+    ]).unwrap();
+
+    assert_eq!(faraway_line.relate_entities(&entities), None);
 }
 
+#[test]
 fn entities_relate_entity_fig4() {
     let mut mydxf_mock = vec![Entity::from_contur(contur![
         Point::new(-4., -9., None),
@@ -206,7 +214,7 @@ fn entities_relate_entity_fig4() {
         Point::new(-3., -10., None)
     ]).unwrap()];
 
-    let outer = Entity::from_contur(contur![
+    let mut outer = Entity::from_contur(contur![
         Point::new(-8., -1., None),
         Point::new(14., -1., None),
         Point::new(7., -20., None),
@@ -215,7 +223,8 @@ fn entities_relate_entity_fig4() {
     ]).unwrap();
     assert_eq!(mydxf_mock.relate_entity(&outer), Some(Relation::Inside));
 
-    let mut rrxml_mock = vec![];
+    let mut rrxml_mock = vec![outer];
+
     rrxml_mock.push(Entity::from_contur(contur![
         Point::new(-6., -5., None),
         Point::new(2.2, -4.3, None),
@@ -241,7 +250,6 @@ fn entities_relate_entity_fig4() {
         Point::new(4., -11., None),
         Point::new(5., -4., None)
     ]).unwrap());
-    rrxml_mock.push(outer);
     assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
 
     // pushing some circle outside contur (but within "hole" contur)
@@ -257,4 +265,10 @@ fn entities_relate_entity_fig4() {
     mydxf_mock.pop();
     mydxf_mock.push(Entity::from_point(Point::new(5., -15., Some(1.))));
     assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+
+    let faraway_line = vec![Entity::from_contur(contur![
+        Point::new(1000.,1000.,None),
+        Point::new(2000.,2000.,None)
+    ]).unwrap()];
+    assert_eq!(faraway_line.relate_entities(&rrxml_mock), None);
 }

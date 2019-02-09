@@ -10,7 +10,7 @@ pub mod checks;
 pub mod entities;
 pub mod traits;
 
-fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
+pub fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
     if rrxml.len() == 0 { return None };
 
     let mut parcels = vec![];
@@ -21,12 +21,18 @@ fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
         }
     }
 
-    Some(parcels)
+    match parcels.len() {
+        0 => None,
+        _ => Some(parcels),
+    }
 }
 
-fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
-    match mydxf.relate_entities(&parcel.entities) {
-        Some(_) => true,
+pub fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
+    match mydxf.entities.relate_entities(&parcel.entities) {
+        Some(_) => {
+            debug!("got intersect with {}", parcel.number);
+            true
+        },
         None => false,
     }
 }

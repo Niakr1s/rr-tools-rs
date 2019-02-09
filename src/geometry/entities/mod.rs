@@ -17,29 +17,40 @@ impl Rectangable for Entities {
 }
 
 impl Relative for Entities {
+    /// logic fully similar to Entities::relate_entities
     fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
-        let mut all_inside: Option<bool> = None;
+        let mut checks = vec![];
         for self_entity in self {
-            match self_entity.relate_entity(entity) {
-                Some(Relation::Inside) => match all_inside {
-                    Some(false) => return Some(Relation::Intersect),
-                    None => all_inside = Some(true),
-                    _ => (),
-                },
-                Some(Relation::Intersect) => return Some(Relation::Intersect),
-                None => match all_inside {
-                    Some(true) => all_inside = return Some(Relation::Intersect),
-                    None => all_inside = Some(false),
-                    _ => (),
-                },
-            }
+            let check = self_entity.relate_entity(entity);
+            if let Some(Relation::Intersect) = check {
+                debug!("intersect!");
+                return Some(Relation::Intersect);
+            };
+            checks.push(check);
         };
-        println!("dfasdflkjasdlfkj;asdlkfj");
-        match all_inside {
-            Some(true) => Some(Relation::Inside),
-            Some(false) => Some(Relation::Intersect),
-            None => None,
-        }
+        debug!("got checks: {:?}", checks);
+
+        if checks.iter().all(|x| *x == None) { return None };
+
+        Some(Relation::Inside)
+    }
+
+    /// logic fully similar to Entities::relate_entity
+    fn relate_entities(&self, entities: &Entities) -> Option<Relation> {
+        let mut checks = vec![];
+        for self_entity in self {
+            let check = self_entity.relate_entities(entities);
+            if let Some(Relation::Intersect) = check {
+                debug!("intersect!");
+                return Some(Relation::Intersect);
+            };
+            checks.push(check);
+        };
+        debug!("got checks: {:?}", checks);
+
+        if checks.iter().all(|x| *x == None) { return None };
+
+        Some(Relation::Inside)
     }
 }
 
@@ -154,6 +165,25 @@ impl Relative for Entity {
                 }
             },
         }
+    }
+
+    fn relate_entities(&self, entities: &Entities) -> Option<Relation> {
+        let mut in_hole_counter = 0;
+        debug!("\nentities len: {}", entities.len());
+        for e in entities {
+            let relate = self.relate_entity(e);
+            debug!("got self.relate_entity {:?}", relate);
+            match relate {
+                Some(Relation::Intersect) => {
+                    return Some(Relation::Intersect);
+                },
+                Some(Relation::Inside) => in_hole_counter += 1,
+                None => continue,
+            }
+        };
+        debug!("in hole_counter: {}", in_hole_counter);
+        if in_hole_counter % 2 == 1 { return Some(Relation::Inside) };
+        None
     }
 }
 

@@ -16,6 +16,33 @@ impl Rectangable for Entities {
     }
 }
 
+impl Relative for Entities {
+    fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
+        let mut all_inside: Option<bool> = None;
+        for self_entity in self {
+            match self_entity.relate_entity(entity) {
+                Some(Relation::Inside) => match all_inside {
+                    Some(false) => return Some(Relation::Intersect),
+                    None => all_inside = Some(true),
+                    _ => (),
+                },
+                Some(Relation::Intersect) => return Some(Relation::Intersect),
+                None => match all_inside {
+                    Some(true) => all_inside = return Some(Relation::Intersect),
+                    None => all_inside = Some(false),
+                    _ => (),
+                },
+            }
+        };
+        println!("dfasdflkjasdlfkj;asdlkfj");
+        match all_inside {
+            Some(true) => Some(Relation::Inside),
+            Some(false) => Some(Relation::Intersect),
+            None => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Entity {
     Contur(Contur),

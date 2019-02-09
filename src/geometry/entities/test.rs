@@ -197,3 +197,64 @@ fn relate_entities_fig3() {
 
     assert_eq!(blue_line.relate_entities(&entities), Some(Relation::Intersect));
 }
+
+fn entities_relate_entity_fig4() {
+    let mut mydxf_mock = vec![Entity::from_contur(contur![
+        Point::new(-4., -9., None),
+        Point::new(-0.9, -7.2, None),
+        Point::new(-0.9, -10., None),
+        Point::new(-3., -10., None)
+    ]).unwrap()];
+
+    let outer = Entity::from_contur(contur![
+        Point::new(-8., -1., None),
+        Point::new(14., -1., None),
+        Point::new(7., -20., None),
+        Point::new(-8., -15., None),
+        Point::new(-8., -1., None)
+    ]).unwrap();
+    assert_eq!(mydxf_mock.relate_entity(&outer), Some(Relation::Inside));
+
+    let mut rrxml_mock = vec![];
+    rrxml_mock.push(Entity::from_contur(contur![
+        Point::new(-6., -5., None),
+        Point::new(2.2, -4.3, None),
+        Point::new(-0., -14., None),
+        Point::new(-6., -10., None),
+        Point::new(-6., -5., None)
+    ]).unwrap());
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), None);
+
+    rrxml_mock.push(Entity::from_contur(contur![
+        Point::new(-4., -6., None),
+        Point::new(1., -6., None),
+        Point::new(-1., -12., None),
+        Point::new(-5., -10., None),
+        Point::new(-4., -6., None)
+    ]).unwrap());
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+
+    rrxml_mock.push(Entity::from_contur(contur![
+        Point::new(5., -4., None),
+        Point::new(11., -4., None),
+        Point::new(9., -11., None),
+        Point::new(4., -11., None),
+        Point::new(5., -4., None)
+    ]).unwrap());
+    rrxml_mock.push(outer);
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+
+    // pushing some circle outside contur (but within "hole" contur)
+    mydxf_mock.push(Entity::from_point(Point::new(8., -7., Some(1.))));
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Intersect));
+
+    // pushing some circle outside outer contur
+    mydxf_mock.pop();
+    mydxf_mock.push(Entity::from_point(Point::new(23., -7., Some(1.))));
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Intersect));
+
+    // pushing some circle inside outer
+    mydxf_mock.pop();
+    mydxf_mock.push(Entity::from_point(Point::new(5., -15., Some(1.))));
+    assert_eq!(mydxf_mock.relate_entities(&rrxml_mock), Some(Relation::Inside));
+}

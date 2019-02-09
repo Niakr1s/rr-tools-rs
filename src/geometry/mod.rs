@@ -1,3 +1,4 @@
+use crate::geometry::entities::*;
 use crate::geometry::traits::rectangable::Rectangable;
 use crate::mydxf::MyDxf;
 use crate::rrxml::Parcel;
@@ -24,10 +25,9 @@ fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
 
 fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
     // todo
-//    for entity in &mydxf.entities {
-//        match entity {
-//            Entity::Contur(contur) -> ,
-//            Entity::Point(point) ->
+//    for mydxf_entity in &mydxf.entities {
+//        for parcel_entity in parcel.entities {
+//
 //        }
 //    }
 

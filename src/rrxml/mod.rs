@@ -137,9 +137,9 @@ impl Display for RrXml {
 
 #[derive(Debug, Clone)]
 pub struct Parcel {
-    typ: String,
-    number: String,
-    entities: Entities,
+    pub typ: String,
+    pub number: String,
+    pub entities: Entities,
 }
 
 impl Parcel {

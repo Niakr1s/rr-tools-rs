@@ -13,9 +13,8 @@ fn test_dxf() {
     let mydxf = mydxf::MyDxf::from_file(r"src\test_files\mydxfs\6 1228.dxf").unwrap();
     println!("{:?}", mydxf);
 
+
     let res_block = check_mydxf_in_rrxml(&mydxf, &rr_block);
-    println!("{:?}", res_block);
 
     let res_parcel = check_mydxf_in_rrxml(&mydxf, &rr_parcel);
-    println!("{:?}", res_parcel);
 }

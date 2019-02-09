@@ -18,7 +18,6 @@ impl Rectangable for Entities {
 
 impl Relative for Entities {
     fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
-        let mut all_inside: Option<bool> = None;
         let mut checks = vec![];
         for self_entity in self {
             let check = self_entity.relate_entity(entity);
@@ -29,10 +28,12 @@ impl Relative for Entities {
             checks.push(check);
         };
 
-        if checks.iter().all(|x| *x == Some(Relation::Inside)) { return Some(Relation::Inside) };
+        println!("got checks: {:?}", checks);
+
+//        if checks.iter().all(|x| *x == Some(Relation::Inside)) { return Some(Relation::Inside) };
         if checks.iter().all(|x| *x == None) { return None };
 
-        Some(Relation::Intersect)
+        Some(Relation::Inside)
     }
 }
 

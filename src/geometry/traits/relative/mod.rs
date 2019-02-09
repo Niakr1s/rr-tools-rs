@@ -7,7 +7,9 @@ pub trait Relative: Rectangable {
     fn relate_entities(&self, entities: &Entities) -> Option<Relation> {
         let mut in_hole: Option<bool> = None;
         for e in entities {
-            match self.relate_entity(e) {
+            let relate = self.relate_entity(e);
+            println!("got self.relate_entity {:?}", relate);
+            match relate {
                 Some(Relation::Intersect) => {
                     return Some(Relation::Intersect);
                 },
@@ -18,6 +20,7 @@ pub trait Relative: Rectangable {
                 None => continue,
             }
         };
+        println!("in hole: {:?}", in_hole);
         match in_hole {
             Some(true) => None,
             Some(false) => Some(Relation::Inside),

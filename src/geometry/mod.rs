@@ -28,12 +28,13 @@ pub fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>>
 }
 
 pub fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
-    let result = match mydxf.relate_entities(&parcel.entities) {
-        Some(_) => true,
+    match mydxf.relate_entities(&parcel.entities) {
+        Some(_) => {
+            println!("got intersect with {}", parcel.number);
+            true
+        },
         None => false,
-    };
-    println!("got {} for {}", result, parcel.number);
-    result
+    }
 }
 
 #[cfg(test)]

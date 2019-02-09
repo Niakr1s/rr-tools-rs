@@ -10,6 +10,19 @@ pub mod checks;
 pub mod entities;
 pub mod traits;
 
+pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<&RrXml>) -> Option<Vec<Parcel>> {
+    let mut parcels = vec![];
+    for rrxml in rrxmls {
+        if let Some(ref mut parcel) = check_mydxf_in_rrxml(mydxf, rrxml) {
+            parcels.append(parcel);
+        }
+    };
+    match parcels.len() {
+        0 => None,
+        _ => Some(parcels),
+    }
+}
+
 pub fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
     if rrxml.len() == 0 { return None };
 
@@ -20,7 +33,6 @@ pub fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>>
             parcels.push(parcel.clone());
         }
     }
-
     match parcels.len() {
         0 => None,
         _ => Some(parcels),
@@ -36,6 +48,7 @@ pub fn check_mydxf_in_parcel(mydxf: &MyDxf, parcel: &Parcel) -> bool {
         None => false,
     }
 }
+
 
 #[cfg(test)]
 mod test;

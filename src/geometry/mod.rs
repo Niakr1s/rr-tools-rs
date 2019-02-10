@@ -6,8 +6,7 @@ use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
 
 pub mod checks;
-#[macro_use]
-pub mod entities;
+#[macro_use] pub mod entities;
 pub mod traits;
 
 pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<RrXml>) -> Option<Vec<Parcel>> {

@@ -1,6 +1,6 @@
-use rr_tools_rs::geometry::*;
-use rr_tools_rs::mydxf::MyDxf;
-use rr_tools_rs::rrxml::RrXml;
+use super::*;
+use crate::mydxf::MyDxf;
+use crate::rrxml::RrXml;
 use std::path::{Path, PathBuf};
 
 #[test]

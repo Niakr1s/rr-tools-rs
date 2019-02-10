@@ -1,13 +1,14 @@
-use crate::geometry::entities::*;
-use crate::geometry::traits::rectangable::Rectangable;
-use crate::geometry::traits::relative::Relative;
+#[macro_use] extern crate log;
+
+#[macro_use] pub mod geometry;
+pub mod mydxf;
+pub mod rrxml;
+pub mod error;
+
 use crate::mydxf::MyDxf;
 use crate::rrxml::Parcel;
 use crate::rrxml::RrXml;
-
-pub mod checks;
-#[macro_use] pub mod entities;
-pub mod traits;
+use crate::geometry::traits::relative::Relative;
 
 pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<RrXml>) -> Option<Vec<Parcel>> {
     let mut parcels = vec![];

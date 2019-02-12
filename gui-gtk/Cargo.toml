@@ -5,6 +5,9 @@ authors = ["Niakr1s <pavel2188@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-gtk = "^0.5"
-relm = "^0.15"
-relm-derive = "^0.15"
+gdk = "0.9.0"
+url = "1.7.2"
+
+[dependencies.gtk]
+version = "^0.5"
+features = ["v3_22"]

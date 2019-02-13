@@ -9,6 +9,8 @@ use gtk::*;
 
 use url::Url;
 
+use std::ffi::OsStr;
+
 macro_rules! clone {
     (@param _) => ( _ );
     (@param $x:ident) => ( $x );
@@ -64,27 +66,15 @@ fn main() {
     let glade_src = include_str!(r"glade\rr-tools-rs.glade");
     let builder = Builder::new_from_string(glade_src);
     let window: gtk::Window = builder.get_object("main_window").unwrap();
+    window.set_keep_above(true);
 
     let rrxml_treeview: TreeView = builder.get_object("rrxml_view").unwrap();
+    let rrxml_store: ListStore = builder.get_object("rrxml_store").unwrap();
     let mydxf_treeview: TreeView = builder.get_object("mydxf_view").unwrap();
+    let mydxf_store: ListStore = builder.get_object("mydxf_store").unwrap();
 
-    // Configure the text view to accept URI lists from other applications. This allows
-    // dragging files & folders from a file browser program onto the textview.
-    let targets = vec![gtk::TargetEntry::new(
-        "text/uri-list",
-        TargetFlags::OTHER_APP,
-        0,
-    )];
-
-    rrxml_treeview.drag_dest_set(DestDefaults::ALL, &targets, DragAction::COPY);
-    rrxml_treeview.connect_drag_data_received(|w, _, _, _, d, _, _| {
-        println!("d&d recieved");
-        for file in d.get_uris() {
-            let url = Url::parse(&file).expect("bad uri");
-            let path = url.to_file_path();
-            println!("{:?}", path);
-        }
-    });
+    treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
+    treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
 
     window.show_all();
 
@@ -94,4 +84,31 @@ fn main() {
     });
 
     gtk::main();
+}
+
+fn treeview_connect_with_drag_data_filtered(
+    treeview: &TreeView,
+    store: &ListStore,
+    filter: &'static str,
+) {
+    let targets = vec![gtk::TargetEntry::new(
+        "text/uri-list",
+        TargetFlags::OTHER_APP,
+        0,
+    )];
+    treeview.drag_dest_set(DestDefaults::ALL, &targets, DragAction::COPY);
+    treeview.connect_drag_data_received(clone!( store => move |w, _, _, _, d, _, _| {
+        let accepted_ext = Some(OsStr::new(filter));
+        for file in d.get_uris() {
+            let url = Url::parse(&file).expect("bad uri");
+            let path = url.to_file_path().unwrap();
+            println!("got {:?}", path);
+            if !(path.extension() == accepted_ext) {
+                println!("bad extension");
+                continue;
+            };
+            let path = path.to_str().unwrap();
+            store.insert_with_values(None, &[0], &[&path]);
+        }
+    }));
 }

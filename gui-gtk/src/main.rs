@@ -2,6 +2,10 @@ extern crate gdk;
 extern crate gtk;
 extern crate url;
 
+extern crate rr_tools_lib;
+
+use rr_tools_lib::rrxml::RrXml;
+
 use gdk::DragAction;
 
 use gtk::prelude::*;
@@ -76,6 +80,22 @@ fn main() {
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
 
+    let rename_button: Button = builder.get_object("rename_button").unwrap();
+
+    rename_button.connect_clicked(clone!(rrxml_treeview => move |_| {
+        let selection = rrxml_treeview.get_selection();
+        let (treepaths, model) = selection.get_selected_rows();
+
+        for treepath in treepaths {
+            let iter = model.get_iter(&treepath).unwrap();
+            let value = model.get_value(&iter, 0).get::<String>().unwrap();
+            //todo
+        }
+
+    }));
+
+    let check_button: Button = builder.get_object("check_button").unwrap();
+
     window.show_all();
 
     window.connect_delete_event(move |win, _| {
@@ -84,6 +104,18 @@ fn main() {
     });
 
     gtk::main();
+}
+
+fn get_from_treeview(treeview: &TreeView) -> Vec<String> {
+    let selection = treeview.get_selection();
+    let (paths, model) = selection.get_selected_rows();
+    paths
+        .iter()
+        .map(|path| {
+            let iter = model.get_iter(path).unwrap();
+            model.get_value(&iter, 0).get::<String>().unwrap()
+        })
+        .collect::<Vec<String>>()
 }
 
 fn treeview_connect_with_drag_data_filtered(

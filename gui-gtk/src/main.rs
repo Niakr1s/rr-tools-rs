@@ -8,10 +8,12 @@ use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::RrXml;
 
-use gdk::DragAction;
+use gdk::{Display, DragAction, EventKey, ModifierType};
 
 use gtk::prelude::*;
 use gtk::*;
+
+use gdk::enums::key;
 
 use url::Url;
 
@@ -48,21 +50,6 @@ macro_rules! upgrade_weak {
     };
 }
 
-fn get_selected(treeview: &TreeView) -> Vec<String> {
-    let selection = treeview.get_selection();
-    let (treepaths, treemodel) = selection.get_selected_rows();
-    treepaths
-        .iter()
-        .map(|treepath| {
-            let iter = treemodel.get_iter(&treepath).unwrap();
-            treemodel
-                .get_value(&iter, 0)
-                .get::<String>()
-                .expect("not a string")
-        })
-        .collect()
-}
-
 fn main() {
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
@@ -80,11 +67,28 @@ fn main() {
     let mydxf_store: ListStore = builder.get_object("mydxf_store").unwrap();
     let result_treeview: TreeView = builder.get_object("result_view").unwrap();
     let result_store: ListStore = builder.get_object("result_store").unwrap();
+    let rename_button: Button = builder.get_object("rename_button").unwrap();
+    let check_button: Button = builder.get_object("check_button").unwrap();
+
+    result_treeview.connect_key_press_event(clone!(result_treeview, result_store => move |_,key| {
+        if key_is_ctrl_c(&key) {
+            println!("got ctrl+c event");
+            let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
+            let results = get_from_treeview_multiple(&result_treeview);
+            let to_clipboard = results.join("\n");
+            clipboard.set_text(&to_clipboard);
+
+        };
+
+        Inhibit(false)
+    }));
 
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
 
-    let rename_button: Button = builder.get_object("rename_button").unwrap();
+    treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
+    treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
+
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |_| {
         let selection = rrxml_treeview.get_selection();
         let (treepaths, model) = selection.get_selected_rows();
@@ -100,7 +104,6 @@ fn main() {
 
     }));
 
-    let check_button: Button = builder.get_object("check_button").unwrap();
     check_button.connect_clicked(
         clone!(rrxml_treeview, mydxf_treeview, result_store => move |_| {
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
@@ -165,6 +168,24 @@ fn get_from_treeview_multiple(treeview: &TreeView) -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
+fn treeview_connect_key_press(treeview: &TreeView, store: &ListStore) {
+    treeview.connect_key_press_event(clone!(treeview, store => move |_, key| {
+        // if event_key
+        let keyval = key.get_keyval();
+
+        if keyval == key::Delete {
+            let selection = treeview.get_selection();
+            let (paths, model) = selection.get_selected_rows();
+            for path in paths {
+                let iter = model.get_iter(&path).unwrap();
+                store.remove(&iter);
+            }
+        };
+
+        Inhibit(false)
+    }));
+}
+
 fn treeview_connect_with_drag_data_filtered(
     treeview: &TreeView,
     store: &ListStore,
@@ -189,4 +210,16 @@ fn treeview_connect_with_drag_data_filtered(
             store.insert_with_values(None, &[0], &[&path]);
         }
     }));
+}
+
+fn key_is_ctrl_c(key: &EventKey) -> bool {
+    let keyval = key.get_keyval();
+    let state = key.get_state();
+
+    (state == ModifierType::CONTROL_MASK
+        || state == (ModifierType::CONTROL_MASK | ModifierType::LOCK_MASK))
+        && (keyval == key::C
+            || keyval == key::c
+            || keyval == key::Cyrillic_es
+            || keyval == key::Cyrillic_ES)
 }

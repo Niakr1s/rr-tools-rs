@@ -289,7 +289,10 @@ THE SOFTWARE.
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="rrxml_view_column">
-                                <property name="title" translatable="yes">xml path</property>
+                                <property name="title" translatable="yes">xml</property>
+                                <property name="clickable">True</property>
+                                <property name="sort_indicator">True</property>
+                                <property name="sort_column_id">0</property>
                                 <child>
                                   <object class="GtkCellRendererAccel"/>
                                   <attributes>
@@ -402,7 +405,9 @@ THE SOFTWARE.
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="mydxf_view_column">
-                                <property name="title" translatable="yes">dxf path</property>
+                                <property name="title" translatable="yes">dxf</property>
+                                <property name="sort_indicator">True</property>
+                                <property name="sort_column_id">0</property>
                                 <child>
                                   <object class="GtkCellRendererAccel"/>
                                   <attributes>
@@ -468,6 +473,8 @@ THE SOFTWARE.
                     <child>
                       <object class="GtkTreeViewColumn" id="result_view_column">
                         <property name="title" translatable="yes">result</property>
+                        <property name="sort_indicator">True</property>
+                        <property name="sort_column_id">0</property>
                         <child>
                           <object class="GtkCellRendererAccel"/>
                           <attributes>

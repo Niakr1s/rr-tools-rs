@@ -1,3 +1,4 @@
+use super::geometry::entities::*;
 use crate::error::MyError;
 use crate::geometry::traits::rectangable::*;
 use roxmltree::{self, Document};
@@ -7,7 +8,6 @@ use std::fmt::{self, Display, Formatter};
 use std::fs::{self, File};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
-use super::geometry::entities::*;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
@@ -25,7 +25,7 @@ impl RrXml {
         let path = path.to_string();
 
         let parsed = RrXml::parse(&file_content)?;
-        Ok (RrXml { path, ..parsed})
+        Ok(RrXml { path, ..parsed })
     }
 
     fn parse(input: &str) -> Result<RrXml, Box<dyn Error>> {
@@ -100,7 +100,9 @@ impl RrXml {
 
     /// It's simple, kpt is usually the last in xml file
     pub fn get_kpt_parcel(&self) -> Option<&Parcel> {
-        if !self.is_kpt() { return None };
+        if !self.is_kpt() {
+            return None;
+        };
         self.parcels.last()
     }
 
@@ -108,11 +110,14 @@ impl RrXml {
         self.parcels.len()
     }
 
-    pub fn rename_file(&self) -> io::Result<()> {
-        fs::rename(&self.path, &self.new_filename())
+    pub fn rename_file(&self) -> io::Result<String> {
+        let new_filepath = self.new_filepath();
+        println!("trying to rename from {} to {}", self.path, new_filepath);
+        fs::rename(&self.path, &new_filepath)?;
+        Ok(new_filepath)
     }
 
-    fn new_filename(&self) -> String {
+    fn new_filepath(&self) -> String {
         let path = Path::new(&self.path);
         let new_filename = format!("{} {}", self.typ, self.number.replace(":", " "));
         let mut new_path = path.with_file_name(new_filename);
@@ -120,9 +125,8 @@ impl RrXml {
             new_path.set_extension(ext);
         }
         debug!("old: {:?}, new: {:?}", path, new_path);
-        format!("{} {}", self.typ, new_path.to_str().unwrap())
+        format!("{}", new_path.to_str().unwrap())
     }
-
 }
 
 impl Rectangable for RrXml {
@@ -137,13 +141,17 @@ impl Rectangable for RrXml {
 
 impl Display for RrXml {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        writeln!(f, "Got {typ}:{number} from '{path}'",
-            path = self.path, typ = self.typ, number = self.number,
+        writeln!(
+            f,
+            "Got {typ}:{number} from '{path}'",
+            path = self.path,
+            typ = self.typ,
+            number = self.number,
         )?;
         writeln!(f, "with parcels:")?;
         for p in &self.parcels {
             writeln!(f, "\t{}", p.number)?;
-        };
+        }
         writeln!(f, "")
     }
 }
@@ -206,7 +214,6 @@ fn file_to_string(filename: &str) -> Result<String, Box<dyn Error>> {
     f.read_to_string(&mut file_content)?;
     Ok(file_content)
 }
-
 
 #[cfg(test)]
 mod test;

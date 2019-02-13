@@ -82,14 +82,17 @@ fn main() {
 
     let rename_button: Button = builder.get_object("rename_button").unwrap();
 
-    rename_button.connect_clicked(clone!(rrxml_treeview => move |_| {
+    rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |_| {
         let selection = rrxml_treeview.get_selection();
         let (treepaths, model) = selection.get_selected_rows();
 
         for treepath in treepaths {
             let iter = model.get_iter(&treepath).unwrap();
-            let value = model.get_value(&iter, 0).get::<String>().unwrap();
-            //todo
+            let filepath = model.get_value(&iter, 0).get::<String>().unwrap();
+            println!("filepath is {:?}", filepath);
+            let rrxml = RrXml::from_file(&filepath).expect("error while creating rrxml from file");
+            let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
+            rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);
         }
 
     }));

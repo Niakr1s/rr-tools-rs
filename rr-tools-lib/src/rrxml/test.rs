@@ -12,7 +12,6 @@ const CIRCLE_STR: &str = r#"<SpelementUnit TypeUnit="Окружность" SuNmb
                                     <R>0.5</R>
                                 </SpelementUnit>"#;
 
-
 fn kpt() -> RrXml {
     RrXml::from_file(KPT).unwrap()
 }
@@ -33,10 +32,7 @@ fn get_point_from_node_point() {
         }
     }
 
-    assert_eq!(
-        point.unwrap(),
-        Point::new(410328.96, 1230548.8, None)
-    )
+    assert_eq!(point.unwrap(), Point::new(410328.96, 1230548.8, None))
 }
 
 #[test]
@@ -51,10 +47,7 @@ fn get_point_from_node_circle() {
         }
     }
 
-    assert_eq!(
-        point.unwrap(),
-        Point::new(410328.96, 1230548.8, Some(0.5))
-    )
+    assert_eq!(point.unwrap(), Point::new(410328.96, 1230548.8, Some(0.5)))
 }
 
 #[test]
@@ -79,11 +72,13 @@ fn get_kpt_parcel_ok() {
 }
 
 #[test]
-fn kpt_rect(){
+fn kpt_rect() {
     let rr = kpt();
     let rect = rr.rect();
-    assert_eq!(rect, Rect::from(9233.9800, 24334.3300, 8652.3700, 22910.5700).unwrap());
-
+    assert_eq!(
+        rect,
+        Rect::from(9233.9800, 24334.3300, 8652.3700, 22910.5700).unwrap()
+    );
 }
 
 #[test]
@@ -106,10 +101,10 @@ fn point_partial_eq() {
 #[test]
 fn new_filename() {
     let rr = kpt();
-    let new_filename = rr.new_filename();
-    assert!(rr.new_filename().ends_with("KPT 77 03 0009007.xml"));
+    let new_filename = rr.new_filepath();
+    assert!(rr.new_filepath().ends_with("KPT 77 03 0009007.xml"));
 
     let rr = kvzu();
-    let new_filename = rr.new_filename();
-    assert!(rr.new_filename().ends_with("KVZU 21 01 010206 115.xml"));
+    let new_filename = rr.new_filepath();
+    assert!(rr.new_filepath().ends_with("KVZU 21 01 010206 115.xml"));
 }

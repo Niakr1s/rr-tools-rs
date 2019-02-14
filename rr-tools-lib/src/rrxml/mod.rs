@@ -2,12 +2,11 @@ use super::geometry::entities::*;
 use crate::error::MyError;
 use crate::geometry::traits::rectangable::*;
 use roxmltree::{self, Document};
-use std::cmp::PartialEq;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::fs::{self, File};
 use std::io::{self, Read};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 

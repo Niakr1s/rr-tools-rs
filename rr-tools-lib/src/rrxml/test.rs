@@ -101,10 +101,8 @@ fn point_partial_eq() {
 #[test]
 fn new_filename() {
     let rr = kpt();
-    let new_filename = rr.new_filepath();
     assert!(rr.new_filepath().ends_with("KPT 77 03 0009007.xml"));
 
     let rr = kvzu();
-    let new_filename = rr.new_filepath();
     assert!(rr.new_filepath().ends_with("KVZU 21 01 010206 115.xml"));
 }

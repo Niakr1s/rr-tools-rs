@@ -1,4 +1,4 @@
-#[macro_use] extern crate log;
+extern crate log;
 extern crate pretty_env_logger;
 extern crate rr_tools_lib;
 
@@ -13,5 +13,4 @@ fn init() {
 
 fn main() {
     init();
-
 }

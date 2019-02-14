@@ -1,8 +1,7 @@
 use crate::geometry::entities::*;
 use crate::geometry::traits::rectangable::*;
-use crate::geometry::traits::relative::*;
+use dxf::entities::EntityType;
 use dxf::{Drawing, DxfResult};
-use dxf::entities::{self, EntityType};
 
 #[derive(Debug)]
 pub struct MyDxf {

@@ -1,5 +1,3 @@
-use crate::geometry::entities::*;
-
 pub trait Rectangable {
     fn rect(&self) -> Rect;
 
@@ -31,11 +29,23 @@ impl Rect {
     }
 
     pub fn from(xmax: f64, ymax: f64, xmin: f64, ymin: f64) -> Result<Rect, String> {
-        let r = Rect { xmax, ymax, xmin, ymin, empty: false };
-        if xmax < xmin || ymax < ymin {
-            return Err(format!("rect {:?} is wrong, max value less then min", r))
+        let r = Rect {
+            xmax,
+            ymax,
+            xmin,
+            ymin,
+            empty: false,
         };
-        Ok(Rect { xmax, ymax, xmin, ymin, empty: false })
+        if xmax < xmin || ymax < ymin {
+            return Err(format!("rect {:?} is wrong, max value less then min", r));
+        };
+        Ok(Rect {
+            xmax,
+            ymax,
+            xmin,
+            ymin,
+            empty: false,
+        })
     }
 
     pub fn add(&mut self, other: &impl Rectangable) {
@@ -48,7 +58,9 @@ impl Rect {
     }
 
     fn add_rect(&mut self, other: &Rect) {
-        if other.is_empty() { return };
+        if other.is_empty() {
+            return;
+        };
         if self.is_empty() {
             *self = other.clone();
         }

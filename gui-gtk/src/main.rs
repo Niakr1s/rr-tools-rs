@@ -5,59 +5,29 @@ extern crate url;
 
 extern crate rr_tools_lib;
 
+mod macros;
+
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{Parcel, RrXml};
 
-use gdk::{Display, DragAction, EventKey, ModifierType};
+use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::*;
+use gtk::{Builder, Clipboard, ListStore, TreeView};
 
 use gdk::enums::key;
 
-use url::Url;
-
 use std::cell::RefCell;
-use std::ffi::OsStr;
+
 use std::sync::mpsc::{self, Receiver};
 use std::thread;
-use std::time::Duration;
 
 mod spinner_button;
-
 use spinner_button::SpinnerButton;
 
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
+mod treeview_handle;
+use treeview_handle::*;
 
 fn main() {
     if gtk::init().is_err() {
@@ -170,86 +140,12 @@ fn global_resultstore_receive() -> glib::Continue {
                     for parcel in parcels {
                         result_store.insert_with_values(None, &[0], &[&parcel.number]);
                     }
-                    button_with_spinner.stop();
                 }
+                button_with_spinner.stop();
             }
         };
         glib::Continue(false)
     })
-}
-
-fn get_from_treeview_single(treeview: &TreeView) -> Option<String> {
-    let selection = treeview.get_selection();
-    if let Some((model, iter)) = selection.get_selected() {
-        return Some(model.get_value(&iter, 0).get::<String>().unwrap());
-    };
-    None
-}
-
-fn get_from_treeview_all(treeview: &TreeView) -> Vec<String> {
-    let selection = treeview.get_selection();
-    selection.select_all();
-    let all = get_from_treeview_multiple(&treeview);
-    selection.unselect_all();
-    all
-}
-
-fn get_from_treeview_multiple(treeview: &TreeView) -> Vec<String> {
-    let selection = treeview.get_selection();
-    let (paths, model) = selection.get_selected_rows();
-    paths
-        .iter()
-        .map(|path| {
-            let iter = model.get_iter(path).unwrap();
-            model.get_value(&iter, 0).get::<String>().unwrap()
-        })
-        .collect::<Vec<String>>()
-}
-
-// common for rrxml and mydxf views
-fn treeview_connect_key_press(treeview: &TreeView, store: &ListStore) {
-    treeview.connect_key_press_event(clone!(treeview, store => move |_, key| {
-        // if event_key
-        let keyval = key.get_keyval();
-
-        if keyval == key::Delete {
-            let selection = treeview.get_selection();
-            let (paths, model) = selection.get_selected_rows();
-            for path in paths {
-                let iter = model.get_iter(&path).unwrap();
-                store.remove(&iter);
-            }
-        };
-
-        Inhibit(false)
-    }));
-}
-
-// common for rrxml and mydxf views
-fn treeview_connect_with_drag_data_filtered(
-    treeview: &TreeView,
-    store: &ListStore,
-    filter: &'static str,
-) {
-    let targets = vec![gtk::TargetEntry::new(
-        "text/uri-list",
-        TargetFlags::OTHER_APP,
-        0,
-    )];
-    treeview.drag_dest_set(DestDefaults::ALL, &targets, DragAction::COPY);
-    treeview.connect_drag_data_received(clone!( store => move |_w, _, _, _, d, _, _| {
-        let accepted_ext = Some(OsStr::new(filter));
-        for file in d.get_uris() {
-            let url = Url::parse(&file).expect("bad uri");
-            let path = url.to_file_path().unwrap();
-            if !(path.extension() == accepted_ext) {
-                continue;
-            };
-            println!("got {:?}", path);
-            let path = path.to_str().unwrap();
-            store.insert_with_values(None, &[0], &[&path]);
-        }
-    }));
 }
 
 fn key_is_ctrl_c(key: &EventKey) -> bool {

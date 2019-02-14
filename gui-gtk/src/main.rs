@@ -1,4 +1,5 @@
 extern crate gdk;
+extern crate glib;
 extern crate gtk;
 extern crate url;
 
@@ -6,7 +7,7 @@ extern crate rr_tools_lib;
 
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
-use rr_tools_lib::rrxml::RrXml;
+use rr_tools_lib::rrxml::{Parcel, RrXml};
 
 use gdk::{Display, DragAction, EventKey, ModifierType};
 
@@ -17,7 +18,11 @@ use gdk::enums::key;
 
 use url::Url;
 
+use std::cell::RefCell;
 use std::ffi::OsStr;
+use std::sync::mpsc::{self, Receiver};
+use std::thread;
+use std::time::Duration;
 
 macro_rules! clone {
     (@param _) => ( _ );
@@ -58,18 +63,21 @@ fn main() {
 
     let glade_src = include_str!(r"glade\rr-tools-rs.glade");
     let builder = Builder::new_from_string(glade_src);
-    let window: gtk::Window = builder.get_object("main_window").unwrap();
-    window.set_keep_above(true);
+    let window: gtk::Window = builder.get_object("main_window").expect("bad glade file");
 
-    let rrxml_treeview: TreeView = builder.get_object("rrxml_view").unwrap();
-    let rrxml_store: ListStore = builder.get_object("rrxml_store").unwrap();
-    let mydxf_treeview: TreeView = builder.get_object("mydxf_view").unwrap();
-    let mydxf_store: ListStore = builder.get_object("mydxf_store").unwrap();
-    let result_treeview: TreeView = builder.get_object("result_view").unwrap();
-    let result_store: ListStore = builder.get_object("result_store").unwrap();
-    let rename_button: Button = builder.get_object("rename_button").unwrap();
-    let check_button: Button = builder.get_object("check_button").unwrap();
-    let progress_bar: ProgressBar = builder.get_object("progress_bar").unwrap();
+    let rrxml_treeview: TreeView = builder.get_object("rrxml_view").expect("bad glade file");
+    let rrxml_store: ListStore = builder.get_object("rrxml_store").expect("bad glade file");
+    let mydxf_treeview: TreeView = builder.get_object("mydxf_view").expect("bad glade file");
+    let mydxf_store: ListStore = builder.get_object("mydxf_store").expect("bad glade file");
+    let result_treeview: TreeView = builder.get_object("result_view").expect("bad glade file");
+    let result_store: ListStore = builder.get_object("result_store").expect("bad glade file");
+    let rename_button: Button = builder.get_object("rename_button").expect("bad glade file");
+    let check_button: Button = builder.get_object("check_button").expect("bad glade file");
+    let check_button_spinner: Spinner = builder
+        .get_object("check_button_spinner")
+        .expect("bad glade file");
+
+    window.set_keep_above(true);
 
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
@@ -92,7 +100,7 @@ fn main() {
     }));
 
     check_button.connect_clicked(
-        clone!(rrxml_treeview, mydxf_treeview, result_store => move |_| {
+        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button_spinner => move |_| {
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
             let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
             let mydxf_path = match get_from_treeview_single(&mydxf_treeview) {
@@ -100,19 +108,24 @@ fn main() {
                 None => return,
             };
 
-            let mydxf = MyDxf::from_file(&mydxf_path).expect("mydxf wrong path");
-            let rrxmls = rrxml_paths.iter().map(|path| {
-                RrXml::from_file(&path).expect("rrxml wrong path")  //todo underlining in treeview with red color etc
-            }).collect::<Vec<RrXml>>();
-
-            let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
-
             result_store.clear();
-            if let Some(parcels) = parcels {
-                for parcel in parcels {
-                    result_store.insert_with_values(None, &[0], &[&parcel.number]);
-                }
-            }
+            check_button_spinner.start();
+
+            let (tx, rx) = mpsc::channel();
+            GLOBAL_RESULTSTORE.with(clone!(check_button_spinner, result_store => move |global| {
+                *global.borrow_mut() = Some((check_button_spinner, result_store, rx))
+            }));
+            let _handle = thread::spawn(move || {
+                let mydxf = MyDxf::from_file(&mydxf_path).expect("mydxf wrong path");
+                let rrxmls = rrxml_paths.iter().map(|path| {
+                    RrXml::from_file(&path).expect("rrxml wrong path")  //todo underlining in treeview with red color etc
+                }).collect::<Vec<RrXml>>();
+                let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
+                thread::sleep(Duration::from_secs(5));  //todo remove it, just for test
+                println!("got parcels!");
+                tx.send(parcels).unwrap();
+                glib::idle_add(global_resultstore_receive);
+            });
         }),
     );
 
@@ -138,6 +151,29 @@ fn main() {
     });
 
     gtk::main();
+}
+
+thread_local!(
+    static GLOBAL_RESULTSTORE: RefCell<
+        Option<(Spinner, ListStore, Receiver<Option<Vec<Parcel>>>)>,
+    > = RefCell::new(None);
+);
+
+fn global_resultstore_receive() -> glib::Continue {
+    GLOBAL_RESULTSTORE.with(|global| {
+        println!("{:?}", *global.borrow());
+        if let Some((ref spinner, ref result_store, ref rx)) = *global.borrow() {
+            if let Ok(parcels) = rx.try_recv() {
+                if let Some(parcels) = parcels {
+                    for parcel in parcels {
+                        result_store.insert_with_values(None, &[0], &[&parcel.number]);
+                    }
+                    spinner.stop();
+                }
+            }
+        };
+        glib::Continue(false)
+    })
 }
 
 fn get_from_treeview_single(treeview: &TreeView) -> Option<String> {
@@ -199,7 +235,7 @@ fn treeview_connect_with_drag_data_filtered(
         0,
     )];
     treeview.drag_dest_set(DestDefaults::ALL, &targets, DragAction::COPY);
-    treeview.connect_drag_data_received(clone!( store => move |w, _, _, _, d, _, _| {
+    treeview.connect_drag_data_received(clone!( store => move |_w, _, _, _, d, _, _| {
         let accepted_ext = Some(OsStr::new(filter));
         for file in d.get_uris() {
             let url = Url::parse(&file).expect("bad uri");

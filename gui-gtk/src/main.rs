@@ -9,7 +9,7 @@ mod macros;
 
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
-use rr_tools_lib::rrxml::{Parcel, RrXml};
+use rr_tools_lib::rrxml::RrXml;
 
 use gdk::{Display, EventKey, ModifierType};
 
@@ -18,9 +18,7 @@ use gtk::{Builder, Clipboard, ListStore, TreeView};
 
 use gdk::enums::key;
 
-use std::cell::RefCell;
-
-use std::sync::mpsc::{self, Receiver};
+use std::sync::mpsc;
 use std::thread;
 
 mod spinner_button;
@@ -28,6 +26,9 @@ use spinner_button::SpinnerButton;
 
 mod treeview_handle;
 use treeview_handle::*;
+
+mod global_stores;
+use global_stores::*;
 
 fn main() {
     if gtk::init().is_err() {
@@ -75,7 +76,6 @@ fn main() {
 
     check_button.connect_clicked(
         clone!(rrxml_treeview, mydxf_treeview, result_store, check_button => move |_| {
-            check_button.start();
             result_store.clear();
 
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
@@ -84,6 +84,8 @@ fn main() {
                 Some(path) => path,
                 None => return,
             };
+
+            check_button.start();
 
             let (tx, rx) = mpsc::channel();
             GLOBAL_RESULTSTORE.with(clone!(check_button, result_store => move |global| {
@@ -124,28 +126,6 @@ fn main() {
     });
 
     gtk::main();
-}
-
-thread_local!(
-    static GLOBAL_RESULTSTORE: RefCell<
-        Option<(SpinnerButton, ListStore, Receiver<Option<Vec<Parcel>>>)>,
-    > = RefCell::new(None);
-);
-
-fn global_resultstore_receive() -> glib::Continue {
-    GLOBAL_RESULTSTORE.with(|global| {
-        if let Some((ref button_with_spinner, ref result_store, ref rx)) = *global.borrow() {
-            if let Ok(parcels) = rx.try_recv() {
-                if let Some(parcels) = parcels {
-                    for parcel in parcels {
-                        result_store.insert_with_values(None, &[0], &[&parcel.number]);
-                    }
-                }
-                button_with_spinner.stop();
-            }
-        };
-        glib::Continue(false)
-    })
 }
 
 fn key_is_ctrl_c(key: &EventKey) -> bool {

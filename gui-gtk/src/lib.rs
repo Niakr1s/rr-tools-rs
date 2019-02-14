@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate log;
+extern crate pretty_env_logger;
+
 extern crate gdk;
 extern crate glib;
 extern crate gtk;
@@ -65,7 +69,7 @@ pub fn gui_run() {
         for treepath in treepaths {
             let iter = model.get_iter(&treepath).unwrap();
             let filepath = model.get_value(&iter, 0).get::<String>().unwrap();
-            println!("filepath is {:?}", filepath);
+            info!("filepath is {:?}", filepath);
             let rrxml = RrXml::from_file(&filepath).expect("error while creating rrxml from file");
             let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
             rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);

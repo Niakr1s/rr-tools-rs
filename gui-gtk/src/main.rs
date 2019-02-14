@@ -24,7 +24,9 @@ use std::sync::mpsc::{self, Receiver};
 use std::thread;
 use std::time::Duration;
 
-mod button_with_spinner;
+mod spinner_button;
+
+use spinner_button::SpinnerButton;
 
 macro_rules! clone {
     (@param _) => ( _ );
@@ -73,11 +75,9 @@ fn main() {
     let mydxf_store: ListStore = builder.get_object("mydxf_store").expect("bad glade file");
     let result_treeview: TreeView = builder.get_object("result_view").expect("bad glade file");
     let result_store: ListStore = builder.get_object("result_store").expect("bad glade file");
-    let rename_button: Button = builder.get_object("rename_button").expect("bad glade file");
-    let check_button: Button = builder.get_object("check_button").expect("bad glade file");
-    let check_button_spinner: Spinner = builder
-        .get_object("check_button_spinner")
-        .expect("bad glade file");
+
+    let rename_button = SpinnerButton::new(&builder, "rename_button", "rename_button_spinner");
+    let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
 
     window.set_keep_above(true);
 
@@ -87,7 +87,8 @@ fn main() {
     treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
 
-    rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |_| {
+    rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
+        w.set_sensitive(false);
         let selection = rrxml_treeview.get_selection();
         let (treepaths, model) = selection.get_selected_rows();
 
@@ -99,10 +100,14 @@ fn main() {
             let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
             rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);
         }
+        w.set_sensitive(true);
     }));
 
     check_button.connect_clicked(
-        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button_spinner => move |_| {
+        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button => move |_| {
+            check_button.start();
+            result_store.clear();
+
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
             let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
             let mydxf_path = match get_from_treeview_single(&mydxf_treeview) {
@@ -110,12 +115,9 @@ fn main() {
                 None => return,
             };
 
-            result_store.clear();
-            check_button_spinner.start();
-
             let (tx, rx) = mpsc::channel();
-            GLOBAL_RESULTSTORE.with(clone!(check_button_spinner, result_store => move |global| {
-                *global.borrow_mut() = Some((check_button_spinner, result_store, rx))
+            GLOBAL_RESULTSTORE.with(clone!(check_button, result_store => move |global| {
+                *global.borrow_mut() = Some((check_button, result_store, rx))
             }));
             let _handle = thread::spawn(move || {
                 let mydxf = MyDxf::from_file(&mydxf_path).expect("mydxf wrong path");
@@ -123,7 +125,6 @@ fn main() {
                     RrXml::from_file(&path).expect("rrxml wrong path")  //todo underlining in treeview with red color etc
                 }).collect::<Vec<RrXml>>();
                 let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
-                thread::sleep(Duration::from_secs(5));  //todo remove it, just for test
                 println!("got parcels!");
                 tx.send(parcels).unwrap();
                 glib::idle_add(global_resultstore_receive);
@@ -157,20 +158,19 @@ fn main() {
 
 thread_local!(
     static GLOBAL_RESULTSTORE: RefCell<
-        Option<(Spinner, ListStore, Receiver<Option<Vec<Parcel>>>)>,
+        Option<(SpinnerButton, ListStore, Receiver<Option<Vec<Parcel>>>)>,
     > = RefCell::new(None);
 );
 
 fn global_resultstore_receive() -> glib::Continue {
     GLOBAL_RESULTSTORE.with(|global| {
-        println!("{:?}", *global.borrow());
-        if let Some((ref spinner, ref result_store, ref rx)) = *global.borrow() {
+        if let Some((ref button_with_spinner, ref result_store, ref rx)) = *global.borrow() {
             if let Ok(parcels) = rx.try_recv() {
                 if let Some(parcels) = parcels {
                     for parcel in parcels {
                         result_store.insert_with_values(None, &[0], &[&parcel.number]);
                     }
-                    spinner.stop();
+                    button_with_spinner.stop();
                 }
             }
         };

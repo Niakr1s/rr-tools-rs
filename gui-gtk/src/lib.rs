@@ -1,3 +1,16 @@
+extern crate gdk;
+extern crate glib;
+extern crate gtk;
+extern crate url;
+
+extern crate rr_tools_lib;
+
+mod macros;
+
+mod global_stores;
+mod spinner_button;
+mod treeview_handle;
+
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::RrXml;
@@ -17,6 +30,11 @@ use crate::spinner_button::SpinnerButton;
 use crate::treeview_handle::*;
 
 pub fn gui_run() {
+    if gtk::init().is_err() {
+        println!("Failed to initialize GTK.");
+        return;
+    }
+
     let glade_src = include_str!(r"glade\rr-tools-rs.glade");
     let builder = Builder::new_from_string(glade_src);
     let window: gtk::Window = builder.get_object("main_window").expect("bad glade file");
@@ -89,7 +107,7 @@ pub fn gui_run() {
     result_treeview.connect_key_press_event(clone!(
         result_treeview => move |_,key| {
         if key_is_ctrl_c(&key) {
-            println!("got ctrl+c event");
+            println!("copied to clipboard");
             let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
             let results = get_from_treeview_multiple(&result_treeview);
             let to_clipboard = results.join("\n");

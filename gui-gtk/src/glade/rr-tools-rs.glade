@@ -49,7 +49,6 @@ THE SOFTWARE.
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="icon_name">thunderbolt-symbolic</property>
-    <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child type="titlebar">
       <placeholder/>
     </child>

@@ -71,19 +71,6 @@ fn main() {
     let check_button: Button = builder.get_object("check_button").unwrap();
     let progress_bar: ProgressBar = builder.get_object("progress_bar").unwrap();
 
-    result_treeview.connect_key_press_event(clone!(
-        result_treeview => move |_,key| {
-        if key_is_ctrl_c(&key) {
-            println!("got ctrl+c event");
-            let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
-            let results = get_from_treeview_multiple(&result_treeview);
-            let to_clipboard = results.join("\n");
-            clipboard.set_text(&to_clipboard);
-        };
-
-        Inhibit(false)
-    }));
-
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
 
@@ -102,7 +89,6 @@ fn main() {
             let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
             rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);
         }
-
     }));
 
     check_button.connect_clicked(
@@ -127,9 +113,22 @@ fn main() {
                     result_store.insert_with_values(None, &[0], &[&parcel.number]);
                 }
             }
-
         }),
     );
+
+    // result to clipboard
+    result_treeview.connect_key_press_event(clone!(
+        result_treeview => move |_,key| {
+        if key_is_ctrl_c(&key) {
+            println!("got ctrl+c event");
+            let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
+            let results = get_from_treeview_multiple(&result_treeview);
+            let to_clipboard = results.join("\n");
+            clipboard.set_text(&to_clipboard);
+        };
+
+        Inhibit(false)
+    }));
 
     window.show_all();
 
@@ -169,6 +168,7 @@ fn get_from_treeview_multiple(treeview: &TreeView) -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
+// common for rrxml and mydxf views
 fn treeview_connect_key_press(treeview: &TreeView, store: &ListStore) {
     treeview.connect_key_press_event(clone!(treeview, store => move |_, key| {
         // if event_key
@@ -187,6 +187,7 @@ fn treeview_connect_key_press(treeview: &TreeView, store: &ListStore) {
     }));
 }
 
+// common for rrxml and mydxf views
 fn treeview_connect_with_drag_data_filtered(
     treeview: &TreeView,
     store: &ListStore,

@@ -24,6 +24,8 @@ use std::sync::mpsc::{self, Receiver};
 use std::thread;
 use std::time::Duration;
 
+mod button_with_spinner;
+
 macro_rules! clone {
     (@param _) => ( _ );
     (@param $x:ident) => ( $x );

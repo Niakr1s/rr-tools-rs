@@ -69,15 +69,16 @@ fn main() {
     let result_store: ListStore = builder.get_object("result_store").unwrap();
     let rename_button: Button = builder.get_object("rename_button").unwrap();
     let check_button: Button = builder.get_object("check_button").unwrap();
+    let progress_bar: ProgressBar = builder.get_object("progress_bar").unwrap();
 
-    result_treeview.connect_key_press_event(clone!(result_treeview, result_store => move |_,key| {
+    result_treeview.connect_key_press_event(clone!(
+        result_treeview => move |_,key| {
         if key_is_ctrl_c(&key) {
             println!("got ctrl+c event");
             let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
             let results = get_from_treeview_multiple(&result_treeview);
             let to_clipboard = results.join("\n");
             clipboard.set_text(&to_clipboard);
-
         };
 
         Inhibit(false)

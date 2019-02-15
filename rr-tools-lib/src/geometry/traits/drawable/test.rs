@@ -40,7 +40,7 @@ fn temp_dxf() {
 
     let mut drawing = Drawing::default();
 
-    entities.draw(&mut drawing);
+    entities.draw(&mut drawing, 2);
 
     drawing
         .save_file("temp.dxf")

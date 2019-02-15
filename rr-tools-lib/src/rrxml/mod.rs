@@ -157,6 +157,7 @@ impl Display for RrXml {
 
 #[derive(Debug, Clone)]
 pub struct Parcel {
+    // may be: CadastralBlock, Parcel, Building, Construction, etc
     pub typ: String,
     pub number: String,
     pub entities: Entities,

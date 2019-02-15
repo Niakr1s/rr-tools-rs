@@ -4,34 +4,29 @@ use crate::rrxml::RrXml;
 use dxf::entities as dxf_entities;
 use dxf::entities::Circle as DxfCircle;
 use dxf::entities::Vertex;
-use dxf::Drawing;
 use dxf::Point as DxfPoint;
+use dxf::{Color, Drawing};
+
+const BLACK: u8 = 7;
+const GREY: u8 = 8;
+const GREEN: u8 = 63;
 
 pub trait Drawable {
-    fn draw(&self, drawing: &mut Drawing);
+    fn draw(&self, drawing: &mut Drawing, color: u8);
     // fn draw(&self, drawing: &mut Drawing) -> DxfResult<()>;
 }
 
-impl Drawable for MyDxf {
-    fn draw(&self, drawing: &mut Drawing) {
-        self.entities.draw(drawing);
-    }
-}
-
-impl Drawable for RrXml {
-    fn draw(&self, drawing: &mut Drawing) {}
-}
-
 impl Drawable for Entities {
-    fn draw(&self, drawing: &mut Drawing) {
+    fn draw(&self, drawing: &mut Drawing, color: u8) {
         for e in self {
-            e.draw(drawing);
+            e.draw(drawing, color);
         }
     }
 }
 
 impl Drawable for Entity {
-    fn draw(&self, drawing: &mut Drawing) {
+    fn draw(&self, drawing: &mut Drawing, color: u8) {
+        let color = Color::from_index(color);
         match self {
             Entity::Contur(ref c) => {
                 let vertices = c
@@ -47,19 +42,24 @@ impl Drawable for Entity {
                     ..Default::default()
                 };
 
-                drawing.entities.push(dxf_entities::Entity::new(
-                    dxf_entities::EntityType::Polyline(dxf_polyline),
-                ));
+                let mut entity =
+                    dxf_entities::Entity::new(dxf_entities::EntityType::Polyline(dxf_polyline));
+
+                entity.common.color = color;
+
+                drawing.entities.push(entity);
             }
             Entity::Point(ref p) => {
                 let center = DxfPoint::new(p.y, p.x, 0.);
                 let radius = p.get_radius();
                 let dxf_circle = DxfCircle::new(center, radius);
-                drawing
-                    .entities
-                    .push(dxf_entities::Entity::new(dxf_entities::EntityType::Circle(
-                        dxf_circle,
-                    )));
+
+                let mut entity =
+                    dxf_entities::Entity::new(dxf_entities::EntityType::Circle(dxf_circle));
+
+                entity.common.color = color;
+
+                drawing.entities.push(entity);
             }
         };
     }

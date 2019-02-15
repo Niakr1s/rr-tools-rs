@@ -8,20 +8,19 @@ use dxf::Point as DxfPoint;
 use dxf::{Color, Drawing};
 
 pub trait DrawableWithColor {
-    fn draw(&self, drawing: &mut Drawing, color: u8);
-    // fn draw(&self, drawing: &mut Drawing) -> DxfResult<()>;
+    fn draw_with_color(&self, drawing: &mut Drawing, color: u8);
 }
 
 impl DrawableWithColor for Entities {
-    fn draw(&self, drawing: &mut Drawing, color: u8) {
+    fn draw_with_color(&self, drawing: &mut Drawing, color: u8) {
         for e in self {
-            e.draw(drawing, color);
+            e.draw_with_color(drawing, color);
         }
     }
 }
 
 impl DrawableWithColor for Entity {
-    fn draw(&self, drawing: &mut Drawing, color: u8) {
+    fn draw_with_color(&self, drawing: &mut Drawing, color: u8) {
         let color = Color::from_index(color);
         match self {
             Entity::Contur(ref c) => {

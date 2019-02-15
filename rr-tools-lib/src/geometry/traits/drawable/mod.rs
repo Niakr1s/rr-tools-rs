@@ -1,4 +1,6 @@
 use crate::geometry::entities::*;
+use crate::mydxf::MyDxf;
+use crate::rrxml::RrXml;
 use dxf::entities as dxf_entities;
 use dxf::entities::Circle as DxfCircle;
 use dxf::entities::Vertex;
@@ -6,20 +8,30 @@ use dxf::Drawing;
 use dxf::Point as DxfPoint;
 
 pub trait Drawable {
-    fn push(&self, drawing: &mut Drawing);
+    fn draw(&self, drawing: &mut Drawing);
     // fn draw(&self, drawing: &mut Drawing) -> DxfResult<()>;
 }
 
+impl Drawable for MyDxf {
+    fn draw(&self, drawing: &mut Drawing) {
+        self.entities.draw(drawing);
+    }
+}
+
+impl Drawable for RrXml {
+    fn draw(&self, drawing: &mut Drawing) {}
+}
+
 impl Drawable for Entities {
-    fn push(&self, drawing: &mut Drawing) {
+    fn draw(&self, drawing: &mut Drawing) {
         for e in self {
-            e.push(drawing);
+            e.draw(drawing);
         }
     }
 }
 
 impl Drawable for Entity {
-    fn push(&self, drawing: &mut Drawing) {
+    fn draw(&self, drawing: &mut Drawing) {
         match self {
             Entity::Contur(ref c) => {
                 let vertices = c

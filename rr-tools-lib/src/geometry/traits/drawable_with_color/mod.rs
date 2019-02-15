@@ -7,16 +7,12 @@ use dxf::entities::Vertex;
 use dxf::Point as DxfPoint;
 use dxf::{Color, Drawing};
 
-const BLACK: u8 = 7;
-const GREY: u8 = 8;
-const GREEN: u8 = 63;
-
-pub trait Drawable {
+pub trait DrawableWithColor {
     fn draw(&self, drawing: &mut Drawing, color: u8);
     // fn draw(&self, drawing: &mut Drawing) -> DxfResult<()>;
 }
 
-impl Drawable for Entities {
+impl DrawableWithColor for Entities {
     fn draw(&self, drawing: &mut Drawing, color: u8) {
         for e in self {
             e.draw(drawing, color);
@@ -24,7 +20,7 @@ impl Drawable for Entities {
     }
 }
 
-impl Drawable for Entity {
+impl DrawableWithColor for Entity {
     fn draw(&self, drawing: &mut Drawing, color: u8) {
         let color = Color::from_index(color);
         match self {

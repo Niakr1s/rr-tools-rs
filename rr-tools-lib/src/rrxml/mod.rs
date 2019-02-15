@@ -10,6 +10,11 @@ use std::path::Path;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
+// for drawing to dxf
+const BLACK: u8 = 7;
+const GREY: u8 = 8;
+const GREEN: u8 = 63;
+
 #[derive(Debug, Clone)]
 pub struct RrXml {
     pub path: String,

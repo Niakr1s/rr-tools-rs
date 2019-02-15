@@ -2,9 +2,9 @@ use crate::geometry::checks::*;
 use crate::geometry::traits::drawable::*;
 use crate::geometry::traits::rectangable::*;
 use crate::geometry::traits::relative::*;
+
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
-use dxf::{Drawing, DxfResult};
 
 pub type Entities = Vec<Entity>;
 
@@ -219,12 +219,6 @@ impl Relative for Entity {
     }
 }
 
-impl Drawable for Entity {
-    fn draw(&self, drawing: &mut Drawing) -> DxfResult<()> {
-        Ok(())
-    }
-}
-
 fn inpolygon_switch(inpolygon: &mut bool, condition: bool) {
     if *inpolygon {
         *inpolygon &= condition;
@@ -277,6 +271,13 @@ impl Point {
         match self.r {
             Some(_) => false,
             None => true,
+        }
+    }
+
+    pub fn get_radius(&self) -> f64 {
+        match self.r {
+            Some(r) => r,
+            None => 0.,
         }
     }
 }

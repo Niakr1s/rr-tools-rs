@@ -26,7 +26,7 @@ impl Drawable for Entity {
                     .points
                     .iter()
                     .map(|p| Vertex {
-                        location: DxfPoint::new(p.x, p.y, p.get_radius()),
+                        location: DxfPoint::new(p.y, p.x, p.get_radius()),
                         ..Default::default()
                     })
                     .collect::<Vec<Vertex>>();
@@ -40,7 +40,7 @@ impl Drawable for Entity {
                 ));
             }
             Entity::Point(ref p) => {
-                let center = DxfPoint::new(p.x, p.y, 0.);
+                let center = DxfPoint::new(p.y, p.x, 0.);
                 let radius = p.get_radius();
                 let dxf_circle = DxfCircle::new(center, radius);
                 drawing

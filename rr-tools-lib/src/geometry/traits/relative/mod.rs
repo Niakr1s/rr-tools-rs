@@ -192,3 +192,6 @@ impl Relative for Entity {
         None
     }
 }
+
+#[cfg(test)]
+mod test;

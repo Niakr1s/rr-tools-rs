@@ -1,8 +1,10 @@
 use crate::geometry::checks::*;
+use crate::geometry::traits::drawable::*;
 use crate::geometry::traits::rectangable::*;
 use crate::geometry::traits::relative::*;
 use dxf::entities::Circle as DxfCircle;
 use dxf::Point as DxfPoint;
+use dxf::{Drawing, DxfResult};
 
 pub type Entities = Vec<Entity>;
 
@@ -11,7 +13,7 @@ impl Rectangable for Entities {
         let mut rect = Rect::new();
         for e in self {
             rect.add(e);
-        };
+        }
         rect
     }
 }
@@ -27,10 +29,12 @@ impl Relative for Entities {
                 return Some(Relation::Intersect);
             };
             checks.push(check);
-        };
+        }
         debug!("got checks: {:?}", checks);
 
-        if checks.iter().all(|x| *x == None) { return None };
+        if checks.iter().all(|x| *x == None) {
+            return None;
+        };
 
         Some(Relation::Inside)
     }
@@ -45,10 +49,12 @@ impl Relative for Entities {
                 return Some(Relation::Intersect);
             };
             checks.push(check);
-        };
+        }
         debug!("got checks: {:?}", checks);
 
-        if checks.iter().all(|x| *x == None) { return None };
+        if checks.iter().all(|x| *x == None) {
+            return None;
+        };
 
         Some(Relation::Inside)
     }
@@ -89,7 +95,9 @@ impl Rectangable for Entity {
 
 impl Relative for Entity {
     fn relate_entity(&self, entity: &Entity) -> Option<Relation> {
-        if self.can_not_intersect(entity) { return None };
+        if self.can_not_intersect(entity) {
+            return None;
+        };
 
         match self {
             Entity::Point(ref self_point) => match entity {
@@ -101,20 +109,24 @@ impl Relative for Entity {
                             false => None,
                         },
                     }
-                },
+                }
 
                 Entity::Contur(ref other_contur) => {
-                    if circle_inside_contur(self_point, other_contur) { return Some(Relation::Inside) };
+                    if circle_inside_contur(self_point, other_contur) {
+                        return Some(Relation::Inside);
+                    };
 
                     let other_points = &other_contur.points;
 
                     let mut other_first = other_points.first().unwrap();
                     for other_p in other_points {
-                        if circle_relate_line(self_point, (other_first, other_p)) { return Some(Relation::Intersect) };
+                        if circle_relate_line(self_point, (other_first, other_p)) {
+                            return Some(Relation::Intersect);
+                        };
                         other_first = other_p;
-                    };
+                    }
                     None
-                },
+                }
             },
 
             Entity::Contur(ref self_contur) => {
@@ -129,13 +141,24 @@ impl Relative for Entity {
                 for self_p in self_points {
                     match entity {
                         Entity::Point(ref other_point) => {
-                            if circle_inside_contur(other_point, self_contur) { return Some(Relation::Intersect) };
-                            intersect_switch(&mut intersect, circle_relate_line(other_point, (self_first, self_p)));
-                            inpolygon_switch(&mut inpolygon, circle_inside_circle(&self_p, other_point));
-                        },
+                            if circle_inside_contur(other_point, self_contur) {
+                                return Some(Relation::Intersect);
+                            };
+                            intersect_switch(
+                                &mut intersect,
+                                circle_relate_line(other_point, (self_first, self_p)),
+                            );
+                            inpolygon_switch(
+                                &mut inpolygon,
+                                circle_inside_circle(&self_p, other_point),
+                            );
+                        }
 
                         Entity::Contur(ref other_contur) => {
-                            inpolygon_switch(&mut inpolygon, circle_inside_contur(self_p, other_contur));
+                            inpolygon_switch(
+                                &mut inpolygon,
+                                circle_inside_contur(self_p, other_contur),
+                            );
 
                             // If other contur lies inside self contur -> self contur is intersecting it
                             let mut other_inpolygon = self_contur.is_closed();
@@ -146,24 +169,31 @@ impl Relative for Entity {
                             for other_p in other_points {
                                 let self_segment = (self_first, self_p);
                                 let other_segment = (other_first, other_p);
-                                inpolygon_switch(&mut other_inpolygon, circle_inside_contur(other_p, self_contur));
-                                if lines_intersect(self_segment, other_segment) { return Some(Relation::Intersect) };
+                                inpolygon_switch(
+                                    &mut other_inpolygon,
+                                    circle_inside_contur(other_p, self_contur),
+                                );
+                                if lines_intersect(self_segment, other_segment) {
+                                    return Some(Relation::Intersect);
+                                };
                                 other_first = other_p;
+                            }
+                            if other_inpolygon {
+                                intersect = true
                             };
-                            if other_inpolygon { intersect = true };
-                        },
+                        }
                     }
                     self_first = self_p;
-                };
+                }
 
                 match inpolygon {
                     true => Some(Relation::Inside),
                     false => match intersect {
                         true => Some(Relation::Intersect),
                         false => None,
-                    }
+                    },
                 }
-            },
+            }
         }
     }
 
@@ -176,14 +206,22 @@ impl Relative for Entity {
             match relate {
                 Some(Relation::Intersect) => {
                     return Some(Relation::Intersect);
-                },
+                }
                 Some(Relation::Inside) => in_hole_counter += 1,
                 None => continue,
             }
-        };
+        }
         debug!("in hole_counter: {}", in_hole_counter);
-        if in_hole_counter % 2 == 1 { return Some(Relation::Inside) };
+        if in_hole_counter % 2 == 1 {
+            return Some(Relation::Inside);
+        };
         None
+    }
+}
+
+impl Drawable for Entity {
+    fn draw(&self, drawing: &mut Drawing) -> DxfResult<()> {
+        Ok(())
     }
 }
 
@@ -285,7 +323,7 @@ impl Rectangable for Contur {
         let mut rect = Rect::new();
         for p in &self.points {
             rect.add(p);
-        };
+        }
         rect
     }
 }

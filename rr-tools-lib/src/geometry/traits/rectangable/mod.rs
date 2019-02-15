@@ -1,3 +1,5 @@
+use crate::geometry::entities::*;
+
 pub trait Rectangable {
     fn rect(&self) -> Rect;
 
@@ -76,5 +78,45 @@ impl Rect {
         if other.ymin < self.ymin {
             self.ymin = other.ymin
         };
+    }
+}
+
+impl Rectangable for Entities {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        for e in self {
+            rect.add(e);
+        }
+        rect
+    }
+}
+
+impl Rectangable for Entity {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        match self {
+            Entity::Contur(ref c) => rect.add(c),
+            Entity::Point(ref p) => rect.add(p),
+        }
+        rect
+    }
+}
+
+impl Rectangable for Point {
+    fn rect(&self) -> Rect {
+        match self.r {
+            Some(r) => Rect::from(self.x + r, self.y + r, self.x - r, self.y - r).unwrap(),
+            None => Rect::from(self.x, self.y, self.x, self.y).unwrap(),
+        }
+    }
+}
+
+impl Rectangable for Contur {
+    fn rect(&self) -> Rect {
+        let mut rect = Rect::new();
+        for p in &self.points {
+            rect.add(p);
+        }
+        rect
     }
 }

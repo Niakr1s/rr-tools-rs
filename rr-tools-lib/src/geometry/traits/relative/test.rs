@@ -310,7 +310,7 @@ fn entities_relate_entity_fig4() {
     ])
     .unwrap()];
 
-    let mut outer = Entity::from_contur(contur![
+    let outer = Entity::from_contur(contur![
         Point::new(-8., -1., None),
         Point::new(14., -1., None),
         Point::new(7., -20., None),

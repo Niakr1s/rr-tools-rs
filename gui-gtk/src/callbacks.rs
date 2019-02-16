@@ -1,10 +1,17 @@
 use crate::global_stores::*;
-use gtk::GtkListStoreExtManual;
+use crate::treeview_handle::store_insert;
+use gtk::{GtkListStoreExt, GtkListStoreExtManual};
 
 pub fn receive_from_todxf_button() -> glib::Continue {
     GLOBAL_FOR_TODXF_BUTTON.with(|global| {
-        if let Some((ref button, ref rx)) = *global.borrow() {
+        if let Some((ref button, ref store, ref rx)) = *global.borrow() {
             if let Ok(result) = rx.try_recv() {
+                if let Ok(rrxmls) = result {
+                    store.clear();
+                    for rrxml in rrxmls {
+                        store_insert(&store, &rrxml);
+                    }
+                }
                 button.stop();
             };
         };

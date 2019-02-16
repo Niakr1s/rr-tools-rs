@@ -114,21 +114,22 @@ pub fn gui_run() {
 
         let (tx, rx) = mpsc::channel();
 
-        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button => move |global| {
-            *global.borrow_mut() = Some((todxf_button, rx))
+        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store => move |global| {
+            *global.borrow_mut() = Some((todxf_button, rrxml_store, rx))
         }));
         let _handle = thread::spawn(move || {
+            let mut succesful = vec![];
             for rrxml_path in rrxml_paths {
                 let rrxml = match RrXml::from_file(&rrxml_path) {
                     Ok(rr) => rr,
                     Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
                 };
                 match rrxml.save_to_dxf() {
-                    Ok(_) => info!("succesfully converted to dxf: {}", rrxml_path),
+                    Ok(_) => {info!("succesfully converted to dxf: {}", rrxml_path); succesful.push(rrxml_path)},
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml_path),
                 };
             }
-            tx.send(Ok(())).unwrap();
+            tx.send(Ok(succesful)).unwrap();
             glib::idle_add(receive_from_todxf_button);
         });
     }));

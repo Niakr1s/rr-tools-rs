@@ -117,8 +117,9 @@ impl RrXml {
 
     pub fn rename_file(&self) -> io::Result<String> {
         let new_filepath = self.new_filepath();
-        println!("trying to rename from {} to {}", self.path, new_filepath);
+        info!("trying to rename from {} to {}", self.path, new_filepath);
         fs::rename(&self.path, &new_filepath)?;
+        info!("succesfully renamed from {} to {}", self.path, new_filepath);
         Ok(new_filepath)
     }
 

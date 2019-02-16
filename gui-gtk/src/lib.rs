@@ -37,7 +37,7 @@ use crate::treeview_handle::*;
 
 pub fn gui_run() {
     if gtk::init().is_err() {
-        println!("Failed to initialize GTK.");
+        error!("Failed to initialize GTK.");
         return;
     }
 
@@ -91,7 +91,10 @@ pub fn gui_run() {
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
         for rrxml_path in rrxml_paths {
-            let rrxml = RrXml::from_file(&rrxml_path).expect("error while reading rrxml file");
+            let rrxml = match RrXml::from_file(&rrxml_path) {
+                Ok(rr) => rr,
+                Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
+            };
 
             let new_filepath = rrxml.new_filepath();
 
@@ -117,10 +120,12 @@ pub fn gui_run() {
             let mut errs = vec![];
 
             for rrxml_path in rrxml_paths {
-                let rrxml = RrXml::from_file(&rrxml_path).expect("error while reading rrxml file");
-                // rrxml.save_to_dxf().expect("error while saving to dxf");
-                if rrxml.save_to_dxf().is_err() {
-                    errs.push(rrxml_path.clone());
+                let rrxml = match RrXml::from_file(&rrxml_path) {
+                    Ok(rr) => rr,
+                    Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
+                };
+                if let Err(_) = rrxml.save_to_dxf() {
+                    errs.push(rrxml_path.clone())
                 };
             }
             tx.send(match errs.len() {
@@ -142,6 +147,11 @@ pub fn gui_run() {
                 None => return,
             };
 
+            let mydxf = match MyDxf::from_file(&mydxf_path) {
+                    Ok(file) => file,
+                    Err(_) => {error!("error while opening dxf file: {}", mydxf_path); return;},
+                };
+
             check_button.start();
 
             let (tx, rx) = mpsc::channel();
@@ -149,12 +159,14 @@ pub fn gui_run() {
                 *global.borrow_mut() = Some((check_button, result_store, rx))
             }));
             let _handle = thread::spawn(move || {
-                let mydxf = MyDxf::from_file(&mydxf_path).expect("mydxf wrong path");
-                let rrxmls = rrxml_paths.iter().map(|path| {
-                    RrXml::from_file(&path).expect("rrxml wrong path")  //todo underlining in treeview with red color etc
-                }).collect::<Vec<RrXml>>();
+                let mut rrxmls = vec![];
+                for rrxml in rrxml_paths {
+                        match RrXml::from_file(&rrxml) {
+                            Ok(file) => rrxmls.push(file),
+                            Err(_) => {error!("error while opening xml file: {}", rrxml)},
+                    }
+                }
                 let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
-                println!("got parcels!");
                 tx.send(parcels).unwrap();
                 glib::idle_add(receive_from_check_button);
             });
@@ -203,5 +215,5 @@ fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     let results = get_from_treeview_multiple(&treeview, column);
     let to_clipboard = results.join("\n");
     clipboard.set_text(&to_clipboard);
-    println!("copied to clipboard");
+    info!("copied to clipboard: {}", to_clipboard);
 }

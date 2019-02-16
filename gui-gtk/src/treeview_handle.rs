@@ -86,7 +86,7 @@ pub fn treeview_connect_with_drag_data_filtered(
             if !(path.extension() == accepted_ext) {
                 continue;
             };
-            println!("got {:?}", path);
+            info!("got via drag&drop: {:?}", path);
             let path = path.to_str().unwrap();
             store_insert(&store, path);
         }

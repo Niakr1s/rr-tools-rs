@@ -40,20 +40,6 @@ THE SOFTWARE.
       <!-- column-name result -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Parcel</col>
-        <col id="1" translatable="yes">21:01:030303</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">CadastralBlock</col>
-        <col id="1" translatable="yes">21:03:030303:223</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Parcel</col>
-        <col id="1" translatable="yes">21:01:030303</col>
-      </row>
-    </data>
   </object>
   <object class="GtkListStore" id="rrxml_store">
     <columns>

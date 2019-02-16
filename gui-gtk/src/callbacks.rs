@@ -7,10 +7,10 @@ pub fn receive_from_todxf_button() -> glib::Continue {
             if let Ok(result) = rx.try_recv() {
                 button.stop();
                 match result {
-                    Ok(()) => (),
                     Err(rrxml_paths) => {
-                        println!("error while saving to dxf: {:?}", rrxml_paths);
+                        error!("error while saving to dxf: {:?}", rrxml_paths);
                     } //todo error window or make them red
+                    _ => (),
                 };
             };
         };

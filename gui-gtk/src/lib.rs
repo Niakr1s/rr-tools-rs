@@ -160,6 +160,7 @@ pub fn gui_run() {
                 Some(path) => path,
                 None => return,
             };
+            info!("starting check: {}", mydxf_path);
 
             let mydxf = match MyDxf::from_file(&mydxf_path) {
                     Ok(file) => file,
@@ -231,5 +232,5 @@ fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     let results = get_from_treeview_multiple(&treeview, column);
     let to_clipboard = results.join("\n");
     clipboard.set_text(&to_clipboard);
-    info!("copied to clipboard: {}", to_clipboard);
+    info!("copied to clipboard:\n{}", to_clipboard);
 }

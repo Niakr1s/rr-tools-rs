@@ -2,6 +2,7 @@ use crate::geometry::entities::*;
 use crate::geometry::traits::rectangable::*;
 use dxf::entities::EntityType;
 use dxf::{Drawing, DxfResult};
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug)]
 pub struct MyDxf {
@@ -11,13 +12,22 @@ pub struct MyDxf {
 
 impl MyDxf {
     pub fn from_file(path: &str) -> DxfResult<MyDxf> {
-        info!("{}: creating MyDxf...", path);
+        debug!("attempt to parse dxf: {}", path);
         let path = path.to_string();
         let drawing = Drawing::load_file(&path)?;
         let entities = drawing_to_entities(drawing);
-        info!("{}: MyDxf created", path);
+        let parsed = MyDxf { path, entities };
+        debug!("succesfully parsed dxf: {}", parsed);
 
-        Ok(MyDxf { path, entities })
+        Ok(parsed)
+    }
+}
+
+impl Display for MyDxf {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "MyDxf from {path}", path = self.path,)?;
+        writeln!(f, "with {} entities", self.entities.len())?;
+        writeln!(f)
     }
 }
 
@@ -58,7 +68,6 @@ fn drawing_to_entities(drawing: Drawing) -> Vec<Entity> {
         };
         entities.push(contur);
     }
-    info!("{:?}", entities);
     entities
 }
 

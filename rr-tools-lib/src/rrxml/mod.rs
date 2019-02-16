@@ -26,10 +26,12 @@ pub struct RrXml {
 
 impl RrXml {
     pub fn from_file(path: &str) -> Result<RrXml, Box<dyn Error>> {
+        debug!("attempt to parse xml: {}", path);
         let file_content = file_to_string(path)?;
         let path = path.to_string();
 
         let parsed = RrXml::parse(&file_content)?;
+        debug!("succesfully parsed xml: {}", parsed);
         Ok(RrXml { path, ..parsed })
     }
 
@@ -134,7 +136,7 @@ impl RrXml {
         if let Some(ext) = path.extension() {
             new_path.set_extension(ext);
         }
-        debug!("old: {:?}, new: {:?}", path, new_path);
+        debug!("rrxml old path: {:?}, new path: {:?}", path, new_path);
         format!("{}", new_path.to_str().unwrap())
     }
 
@@ -176,7 +178,7 @@ impl Display for RrXml {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         writeln!(
             f,
-            "Got {typ}:{number} from '{path}'",
+            "RrXml {typ} {number} from {path}",
             path = self.path,
             typ = self.typ,
             number = self.number,
@@ -185,7 +187,7 @@ impl Display for RrXml {
         for p in &self.parcels {
             writeln!(f, "\t{}", p.number)?;
         }
-        writeln!(f, "")
+        writeln!(f)
     }
 }
 

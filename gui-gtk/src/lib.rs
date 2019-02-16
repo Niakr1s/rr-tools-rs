@@ -11,6 +11,7 @@ extern crate rr_tools_lib;
 
 mod macros;
 
+mod callbacks;
 mod global_stores;
 mod spinner_button;
 mod treeview_handle;
@@ -29,6 +30,7 @@ use gdk::enums::key;
 use std::sync::mpsc;
 use std::thread;
 
+use crate::callbacks::*;
 use crate::global_stores::*;
 use crate::spinner_button::SpinnerButton;
 use crate::treeview_handle::*;
@@ -52,6 +54,7 @@ pub fn gui_run() {
 
     let rename_button = SpinnerButton::new(&builder, "rename_button", "rename_button_spinner");
     let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
+    let todxf_button = SpinnerButton::new(&builder, "todxf_button", "todxf_button_spinner");
 
     window.set_keep_above(true);
 
@@ -70,11 +73,39 @@ pub fn gui_run() {
             let iter = model.get_iter(&treepath).unwrap();
             let filepath = model.get_value(&iter, 0).get::<String>().unwrap();
             info!("filepath is {:?}", filepath);
-            let rrxml = RrXml::from_file(&filepath).expect("error while creating rrxml from file");
+            let rrxml = RrXml::from_file(&filepath).expect("error while reading rrxml file");
             let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
             rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);
         }
         w.set_sensitive(true);
+    }));
+
+    todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview => move |_| {
+        todxf_button.start();
+
+        let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
+
+        let (tx, rx) = mpsc::channel();
+
+        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button => move |global| {
+            *global.borrow_mut() = Some((todxf_button, rx))
+        }));
+        let _handle = thread::spawn(move || {
+            let mut errs = vec![];
+
+            for rrxml_path in rrxml_paths {
+                let rrxml = RrXml::from_file(&rrxml_path).expect("error while reading rrxml file");
+                // rrxml.save_to_dxf().expect("error while saving to dxf");
+                if rrxml.save_to_dxf().is_err() {
+                    errs.push(rrxml_path.clone());
+                };
+            }
+            tx.send(match errs.len() {
+                0 => Ok(()),
+                _ => Err(errs),
+            }).unwrap();
+            glib::idle_add(receive_from_todxf_button);
+        });
     }));
 
     check_button.connect_clicked(
@@ -91,7 +122,7 @@ pub fn gui_run() {
             check_button.start();
 
             let (tx, rx) = mpsc::channel();
-            GLOBAL_RESULTSTORE.with(clone!(check_button, result_store => move |global| {
+            GLOBAL_FOR_CHECK_BUTTON.with(clone!(check_button, result_store => move |global| {
                 *global.borrow_mut() = Some((check_button, result_store, rx))
             }));
             let _handle = thread::spawn(move || {
@@ -102,7 +133,7 @@ pub fn gui_run() {
                 let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
                 println!("got parcels!");
                 tx.send(parcels).unwrap();
-                glib::idle_add(global_resultstore_receive);
+                glib::idle_add(receive_from_check_button);
             });
         }),
     );

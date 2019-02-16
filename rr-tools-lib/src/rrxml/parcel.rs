@@ -34,7 +34,6 @@ impl Parcel {
 
     fn to_dxf_entity_text(&self) -> DxfEntity {
         let (middle_x, middle_y) = self.get_middle_xy_inversed();
-        dbg!((middle_x, middle_y));
         let text = dxf_entities::Text {
             location: DxfPoint::new(middle_x, middle_y, 0.),
             value: self.dxf_string(),

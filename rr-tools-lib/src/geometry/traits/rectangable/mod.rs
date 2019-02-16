@@ -1,5 +1,4 @@
 use crate::geometry::entities::*;
-use std::ops::Add;
 
 pub trait Rectangable {
     fn rect(&self) -> Rect;

@@ -1,4 +1,7 @@
+use dxf::entities as dxf_entities;
 use dxf::entities::Circle as DxfCircle;
+use dxf::entities::Entity as DxfEntity;
+use dxf::entities::Vertex;
 use dxf::Point as DxfPoint;
 
 pub type Entities = Vec<Entity>;
@@ -21,6 +24,34 @@ impl Entity {
             0 => None,
             1 => Some(Entity::Point(c.points.pop().unwrap())),
             _ => Some(Entity::Contur(c)),
+        }
+    }
+
+    pub fn to_dxf_entity(&self) -> DxfEntity {
+        match self {
+            Entity::Contur(ref c) => {
+                let vertices = c
+                    .points
+                    .iter()
+                    .map(|p| Vertex {
+                        location: DxfPoint::new(p.y, p.x, p.get_radius()),
+                        ..Default::default()
+                    })
+                    .collect::<Vec<Vertex>>();
+                let dxf_polyline = dxf_entities::Polyline {
+                    vertices,
+                    ..Default::default()
+                };
+
+                dxf_entities::Entity::new(dxf_entities::EntityType::Polyline(dxf_polyline))
+            }
+            Entity::Point(ref p) => {
+                let center = DxfPoint::new(p.y, p.x, 0.);
+                let radius = p.get_radius();
+                let dxf_circle = DxfCircle::new(center, radius);
+
+                dxf_entities::Entity::new(dxf_entities::EntityType::Circle(dxf_circle))
+            }
         }
     }
 }

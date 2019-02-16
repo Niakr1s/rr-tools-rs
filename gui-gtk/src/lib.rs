@@ -55,6 +55,7 @@ pub fn gui_run() {
     let rename_button = SpinnerButton::new(&builder, "rename_button", "rename_button_spinner");
     let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
     let todxf_button = SpinnerButton::new(&builder, "todxf_button", "todxf_button_spinner");
+    let clear_button = SpinnerButton::new(&builder, "clear_button", "clear_button_spinner");
 
     window.set_keep_above(true);
 
@@ -63,6 +64,10 @@ pub fn gui_run() {
 
     treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
+
+    clear_button.connect_clicked(clone!(rrxml_store => move |_| {
+        rrxml_store.clear();
+    }));
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
         w.set_sensitive(false);

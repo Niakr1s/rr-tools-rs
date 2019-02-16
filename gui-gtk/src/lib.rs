@@ -110,6 +110,7 @@ pub fn gui_run() {
         todxf_button.start();
 
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+        info!("starting to convert to dxf: {:?}", rrxml_paths);
 
         let (tx, rx) = mpsc::channel();
 
@@ -117,21 +118,17 @@ pub fn gui_run() {
             *global.borrow_mut() = Some((todxf_button, rx))
         }));
         let _handle = thread::spawn(move || {
-            let mut errs = vec![];
-
             for rrxml_path in rrxml_paths {
                 let rrxml = match RrXml::from_file(&rrxml_path) {
                     Ok(rr) => rr,
                     Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
                 };
-                if let Err(_) = rrxml.save_to_dxf() {
-                    errs.push(rrxml_path.clone())
+                match rrxml.save_to_dxf() {
+                    Ok(_) => info!("succesfully converted to dxf: {}", rrxml_path),
+                    Err(_) => error!("error while converting to dxf: {:?}", rrxml_path),
                 };
             }
-            tx.send(match errs.len() {
-                0 => Ok(()),
-                _ => Err(errs),
-            }).unwrap();
+            tx.send(Ok(())).unwrap();
             glib::idle_add(receive_from_todxf_button);
         });
     }));

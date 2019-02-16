@@ -9,6 +9,6 @@ thread_local!(
         Option<(SpinnerButton, ListStore, Receiver<Option<Vec<Parcel>>>)>,
     > = RefCell::new(None);
     pub static GLOBAL_FOR_TODXF_BUTTON: RefCell<
-        Option<(SpinnerButton, Receiver<Result<(), Vec<String>>>)>,
+        Option<(SpinnerButton, Receiver<Result<(), ()>>)>,
     > = RefCell::new(None);
 );

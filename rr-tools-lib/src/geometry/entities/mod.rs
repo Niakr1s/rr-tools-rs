@@ -2,6 +2,7 @@ use dxf::entities as dxf_entities;
 use dxf::entities::Circle as DxfCircle;
 use dxf::entities::Entity as DxfEntity;
 use dxf::entities::Vertex;
+use dxf::Color as DxfColor;
 use dxf::Point as DxfPoint;
 
 pub type Entities = Vec<Entity>;
@@ -27,8 +28,8 @@ impl Entity {
         }
     }
 
-    pub fn to_dxf_entity(&self) -> DxfEntity {
-        match self {
+    pub fn to_dxf_entity(&self, color: DxfColor) -> DxfEntity {
+        let mut dxf_entity = match self {
             Entity::Contur(ref c) => {
                 let vertices = c
                     .points
@@ -52,7 +53,9 @@ impl Entity {
 
                 dxf_entities::Entity::new(dxf_entities::EntityType::Circle(dxf_circle))
             }
-        }
+        };
+        dxf_entity.common.color = color;
+        dxf_entity
     }
 }
 

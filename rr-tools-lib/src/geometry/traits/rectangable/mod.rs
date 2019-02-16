@@ -8,6 +8,16 @@ pub trait Rectangable {
         let (a, b) = (self.rect(), other.rect());
         a.xmax < b.xmin || a.ymax < b.ymin || a.xmin > b.xmax || a.ymin > b.ymax
     }
+
+    fn get_middle_xy(&self) -> (f64, f64) {
+        let rect = self.rect();
+        ((rect.xmax + rect.xmin) / 2., (rect.ymax + rect.ymin) / 2.)
+    }
+
+    fn get_middle_xy_inversed(&self) -> (f64, f64) {
+        let (x, y) = self.get_middle_xy();
+        (y, x)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]

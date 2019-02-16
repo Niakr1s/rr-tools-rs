@@ -8,9 +8,14 @@ use std::fs::{self, File};
 use std::io::{self, Read};
 use std::path::Path;
 
+use dxf::entities as dxf_entities;
+use dxf::entities::Entity as DxfEntity;
+use dxf::enums::HorizontalTextJustification;
+use dxf::Point as DxfPoint;
+use dxf::{Block, Color, Drawing};
+
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
-// for drawing to dxf
 const BLACK: u8 = 7;
 const GREY: u8 = 8;
 const GREEN: u8 = 63;
@@ -179,6 +184,47 @@ impl Parcel {
 
     fn add_entity(&mut self, c: Entity) {
         self.entities.push(c);
+    }
+
+    fn to_dxf_entity_text(&self) -> DxfEntity {
+        let (middle_x, middle_y) = self.get_middle_xy_inversed();
+        let text = dxf_entities::Text {
+            location: DxfPoint::new(middle_x, middle_y, 0.),
+            value: self.typ.clone(),
+            horizontal_text_justification: HorizontalTextJustification::Middle,
+            ..Default::default()
+        };
+        let mut text_entity = dxf_entities::Entity::new(dxf_entities::EntityType::Text(text));
+        text_entity.common.color = self.color();
+        text_entity
+    }
+
+    pub fn to_dxf_block(&self) -> Block {
+        let mut entities: Vec<DxfEntity> = self
+            .entities
+            .iter()
+            .map(|e| e.to_dxf_entity(self.color()))
+            .collect();
+
+        let text = self.to_dxf_entity_text();
+        entities.push(text);
+
+        let block = Block {
+            name: self.number.clone(),
+            description: self.typ.clone(),
+            entities,
+            ..Default::default()
+        };
+
+        block
+    }
+
+    fn color(&self) -> Color {
+        match self.typ.as_ref() {
+            "CadastralBlock" => Color::from_index(BLACK),
+            "Parcel" => Color::from_index(GREY),
+            _ => Color::from_index(GREEN),
+        }
     }
 }
 

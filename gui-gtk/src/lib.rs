@@ -105,12 +105,12 @@ pub fn gui_run() {
                 Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
             };
 
-            let new_filepath = rrxml.new_filepath();
+            let new_filepath = match rrxml.rename_file() {
+                Ok(path) => path,
+                Err(_) => {error!("error while renaming file: {}", rrxml_path); continue;},
+            };
 
-            store_insert(&rrxml_store, match rrxml.rename_file() {
-                Ok(_) => &new_filepath,
-                Err(_) => &rrxml_path,
-            });
+            store_insert(&rrxml_store, &new_filepath);
         }
         w.set_sensitive(true);
     }));

@@ -6,13 +6,13 @@ use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::fs::{self, File};
 use std::io::{self, Read};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use dxf::entities as dxf_entities;
 use dxf::entities::Entity as DxfEntity;
 use dxf::enums::HorizontalTextJustification;
 use dxf::Point as DxfPoint;
-use dxf::{Block, Color, Drawing};
+use dxf::{Block, Color, Drawing, DxfResult};
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
@@ -135,6 +135,28 @@ impl RrXml {
         }
         debug!("old: {:?}, new: {:?}", path, new_path);
         format!("{}", new_path.to_str().unwrap())
+    }
+
+    pub fn save_to_dxf(&self) -> DxfResult<()> {
+        let mut path = PathBuf::from(&self.path);
+        path.set_extension("dxf");
+        let path = path.to_str().unwrap();
+        self.to_drawing().save_file(path)
+    }
+
+    fn to_drawing(&self) -> Drawing {
+        let blocks = self
+            .parcels
+            .iter()
+            .map(|p| p.to_dxf_block())
+            .collect::<Vec<Block>>();
+
+        let drawing = Drawing {
+            blocks,
+            ..Default::default()
+        };
+
+        drawing
     }
 }
 

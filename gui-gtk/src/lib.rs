@@ -23,7 +23,7 @@ use rr_tools_lib::rrxml::RrXml;
 use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::{Builder, Clipboard, ListStore, TreeView};
+use gtk::{Builder, Button, Clipboard, ListStore, TreeView};
 
 use gdk::enums::key;
 
@@ -56,6 +56,9 @@ pub fn gui_run() {
     let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
     let todxf_button = SpinnerButton::new(&builder, "todxf_button", "todxf_button_spinner");
     let clear_button = SpinnerButton::new(&builder, "clear_button", "clear_button_spinner");
+    let clipboard_button: Button = builder
+        .get_object("clipboard_button")
+        .expect("bad glade file");
 
     window.set_keep_above(true);
 
@@ -148,14 +151,15 @@ pub fn gui_run() {
     result_treeview.connect_key_press_event(clone!(
         result_treeview => move |_,key| {
         if key_is_ctrl_c(&key) {
-            println!("copied to clipboard");
-            let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
-            let results = get_from_treeview_multiple(&result_treeview);
-            let to_clipboard = results.join("\n");
-            clipboard.set_text(&to_clipboard);
+            results_to_clipboard(&result_treeview);
         };
 
         Inhibit(false)
+    }));
+
+    clipboard_button.connect_clicked(clone!(
+        result_treeview => move |_| {
+        results_to_clipboard(&result_treeview);
     }));
 
     window.show_all();
@@ -178,4 +182,12 @@ fn key_is_ctrl_c(key: &EventKey) -> bool {
             || keyval == key::c
             || keyval == key::Cyrillic_es
             || keyval == key::Cyrillic_ES)
+}
+
+fn results_to_clipboard(treeview: &TreeView) {
+    let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
+    let results = get_from_treeview_multiple(&treeview);
+    let to_clipboard = results.join("\n");
+    clipboard.set_text(&to_clipboard);
+    println!("copied to clipboard");
 }

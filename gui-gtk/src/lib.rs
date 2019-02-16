@@ -75,10 +75,12 @@ pub fn gui_run() {
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
 
     about_button.connect_clicked(clone!(about_dialog => move |_| {
+        info!("about_button clicked");
         about_dialog.run();
     }));
 
     about_dialog.connect_response(clone!(about_dialog => move |_, response| {
+        info!("about_dialog got response: {}", response);
         // GTK_RESPONSE_DELETE_EVENT or GTK_RESPONSE_CANCEL
         if response == -4 || response == -6 {
             about_dialog.hide();
@@ -86,16 +88,19 @@ pub fn gui_run() {
     }));
 
     rrxml_clear_button.connect_clicked(clone!(rrxml_store => move |_| {
+        info!("rrxml_clear_button clicked");
         rrxml_store.clear();
         info!("rrxml store cleared");
     }));
 
     mydxf_clear_button.connect_clicked(clone!(mydxf_store => move |_| {
+        info!("mydxf_clear_button clicked");
         mydxf_store.clear();
         info!("mydxf store cleared");
     }));
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
+        info!("rename_button clicked");
         w.set_sensitive(false);
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
@@ -116,6 +121,7 @@ pub fn gui_run() {
     }));
 
     todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview => move |_| {
+        info!("todxf_button clicked");
         todxf_button.start();
 
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
@@ -145,6 +151,7 @@ pub fn gui_run() {
 
     check_button.connect_clicked(
         clone!(rrxml_treeview, mydxf_treeview, result_store, check_button => move |_| {
+            info!("check_button clicked");
             result_store.clear();
 
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
@@ -183,6 +190,7 @@ pub fn gui_run() {
     // result to clipboard
     result_treeview.connect_key_press_event(clone!(
         result_treeview => move |_,key| {
+        info!("result_treeview key_press_event: {:?}", key);
         if key_is_ctrl_c(&key) {
             results_to_clipboard(&result_treeview, Some(1));
         };
@@ -192,6 +200,7 @@ pub fn gui_run() {
 
     clipboard_button.connect_clicked(clone!(
         result_treeview => move |_| {
+        info!("clipboard_button clicked");
         results_to_clipboard(&result_treeview, Some(1));
     }));
 

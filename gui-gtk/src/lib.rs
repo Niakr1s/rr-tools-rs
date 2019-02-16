@@ -57,7 +57,10 @@ pub fn gui_run() {
     let rename_button = SpinnerButton::new(&builder, "rename_button", "rename_button_spinner");
     let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
     let todxf_button = SpinnerButton::new(&builder, "todxf_button", "todxf_button_spinner");
-    let clear_button = SpinnerButton::new(&builder, "clear_button", "clear_button_spinner");
+    let rrxml_clear_button =
+        SpinnerButton::new(&builder, "rrxml_clear_button", "rrxml_clear_button_spinner");
+    let mydxf_clear_button =
+        SpinnerButton::new(&builder, "mydxf_clear_button", "mydxf_clear_button_spinner");
     let clipboard_button: Button = builder
         .get_object("clipboard_button")
         .expect("bad glade file");
@@ -82,8 +85,14 @@ pub fn gui_run() {
         }
     }));
 
-    clear_button.connect_clicked(clone!(rrxml_store => move |_| {
+    rrxml_clear_button.connect_clicked(clone!(rrxml_store => move |_| {
         rrxml_store.clear();
+        info!("rrxml store cleared");
+    }));
+
+    mydxf_clear_button.connect_clicked(clone!(mydxf_store => move |_| {
+        mydxf_store.clear();
+        info!("mydxf store cleared");
     }));
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {

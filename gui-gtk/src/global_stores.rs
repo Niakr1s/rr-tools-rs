@@ -1,6 +1,6 @@
 use crate::spinner_button::SpinnerButton;
 use gtk::{GtkListStoreExtManual, ListStore};
-use rr_tools_lib::rrxml::Parcel;
+use rr_tools_lib::rrxml::parcel::Parcel;
 use std::cell::RefCell;
 use std::sync::mpsc::Receiver;
 

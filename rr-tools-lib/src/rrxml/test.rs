@@ -106,3 +106,9 @@ fn new_filename() {
     let rr = kvzu();
     assert!(rr.new_filepath().ends_with("KVZU 21 01 010206 115.xml"));
 }
+
+#[test]
+fn rrxml_save_to_dxf() {
+    let rr = kpt();
+    assert!(rr.save_to_dxf().is_ok());
+}

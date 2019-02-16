@@ -8,17 +8,13 @@ use std::fs::{self, File};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
-use dxf::entities as dxf_entities;
 use dxf::entities::Entity as DxfEntity;
-use dxf::enums::HorizontalTextJustification;
-use dxf::Point as DxfPoint;
-use dxf::{Block, Color, Drawing, DxfResult};
+use dxf::{Drawing, DxfResult};
+
+pub mod parcel;
+use parcel::Parcel;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
-
-const BLACK: u8 = 7;
-const GREY: u8 = 8;
-const GREEN: u8 = 63;
 
 #[derive(Debug, Clone)]
 pub struct RrXml {
@@ -145,14 +141,14 @@ impl RrXml {
     }
 
     fn to_drawing(&self) -> Drawing {
-        let blocks = self
-            .parcels
-            .iter()
-            .map(|p| p.to_dxf_block())
-            .collect::<Vec<Block>>();
+        let mut entities: Vec<DxfEntity> = vec![];
+        for p in &self.parcels {
+            let mut parcel_entities = p.to_dxf_entities();
+            entities.append(&mut parcel_entities);
+        }
 
         let drawing = Drawing {
-            blocks,
+            entities,
             ..Default::default()
         };
 
@@ -187,73 +183,11 @@ impl Display for RrXml {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Parcel {
-    // may be: CadastralBlock, Parcel, Building, Construction, etc
-    pub typ: String,
-    pub number: String,
-    pub entities: Entities,
-}
-
-impl Parcel {
-    fn new(typ: String, number: String) -> Parcel {
-        Parcel {
-            typ: typ.to_string(),
-            number: number.to_string(),
-            entities: vec![],
-        }
-    }
-
-    fn add_entity(&mut self, c: Entity) {
-        self.entities.push(c);
-    }
-
-    fn to_dxf_entity_text(&self) -> DxfEntity {
-        let (middle_x, middle_y) = self.get_middle_xy_inversed();
-        let text = dxf_entities::Text {
-            location: DxfPoint::new(middle_x, middle_y, 0.),
-            value: self.typ.clone(),
-            horizontal_text_justification: HorizontalTextJustification::Middle,
-            ..Default::default()
-        };
-        let mut text_entity = dxf_entities::Entity::new(dxf_entities::EntityType::Text(text));
-        text_entity.common.color = self.color();
-        text_entity
-    }
-
-    pub fn to_dxf_block(&self) -> Block {
-        let mut entities: Vec<DxfEntity> = self
-            .entities
-            .iter()
-            .map(|e| e.to_dxf_entity(self.color()))
-            .collect();
-
-        let text = self.to_dxf_entity_text();
-        entities.push(text);
-
-        let block = Block {
-            name: self.number.clone(),
-            description: self.typ.clone(),
-            entities,
-            ..Default::default()
-        };
-
-        block
-    }
-
-    fn color(&self) -> Color {
-        match self.typ.as_ref() {
-            "CadastralBlock" => Color::from_index(BLACK),
-            "Parcel" => Color::from_index(GREY),
-            _ => Color::from_index(GREEN),
-        }
-    }
-}
-
-impl Rectangable for Parcel {
-    fn rect(&self) -> Rect {
-        self.entities.rect()
-    }
+fn file_to_string(filename: &str) -> Result<String, Box<dyn Error>> {
+    let mut f = File::open(filename)?;
+    let mut file_content = String::new();
+    f.read_to_string(&mut file_content)?;
+    Ok(file_content)
 }
 
 fn get_parent_type_and_number(node: &roxmltree::Node<'_, '_>) -> (String, String) {
@@ -279,13 +213,6 @@ fn point_from_node_chunk(node: &roxmltree::Node<'_, '_>) -> Result<Point, Box<dy
     }
     let p = Point { x, y, r };
     Ok(p)
-}
-
-fn file_to_string(filename: &str) -> Result<String, Box<dyn Error>> {
-    let mut f = File::open(filename)?;
-    let mut file_content = String::new();
-    f.read_to_string(&mut file_content)?;
-    Ok(file_content)
 }
 
 #[cfg(test)]

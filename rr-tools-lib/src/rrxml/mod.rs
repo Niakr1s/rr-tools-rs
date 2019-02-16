@@ -140,19 +140,20 @@ impl RrXml {
         self.to_drawing().save_file(path)
     }
 
-    fn to_drawing(&self) -> Drawing {
+    pub fn to_entities(&self) -> Vec<DxfEntity> {
         let mut entities: Vec<DxfEntity> = vec![];
         for p in &self.parcels {
             let mut parcel_entities = p.to_dxf_entities();
             entities.append(&mut parcel_entities);
         }
+        entities
+    }
 
-        let drawing = Drawing {
-            entities,
+    fn to_drawing(&self) -> Drawing {
+        Drawing {
+            entities: self.to_entities(),
             ..Default::default()
-        };
-
-        drawing
+        }
     }
 }
 

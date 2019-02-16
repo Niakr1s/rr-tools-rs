@@ -24,7 +24,11 @@ pub fn receive_from_check_button() -> glib::Continue {
             if let Ok(parcels) = rx.try_recv() {
                 if let Some(parcels) = parcels {
                     for parcel in parcels {
-                        result_store.insert_with_values(None, &[0], &[&parcel.number]);
+                        result_store.insert_with_values(
+                            None,
+                            &[0, 1],
+                            &[&parcel.typ, &parcel.number],
+                        );
                     }
                 }
                 button.stop();

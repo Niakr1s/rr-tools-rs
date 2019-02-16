@@ -88,7 +88,7 @@ pub fn gui_run() {
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
         w.set_sensitive(false);
-        let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
+        let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
         for rrxml_path in rrxml_paths {
             let rrxml = RrXml::from_file(&rrxml_path).expect("error while reading rrxml file");
@@ -106,7 +106,7 @@ pub fn gui_run() {
     todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview => move |_| {
         todxf_button.start();
 
-        let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
+        let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
 
         let (tx, rx) = mpsc::channel();
 
@@ -136,8 +136,8 @@ pub fn gui_run() {
             result_store.clear();
 
             // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
-            let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
-            let mydxf_path = match get_from_treeview_single(&mydxf_treeview) {
+            let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+            let mydxf_path = match get_from_treeview_single(&mydxf_treeview, None) {
                 Some(path) => path,
                 None => return,
             };
@@ -165,7 +165,7 @@ pub fn gui_run() {
     result_treeview.connect_key_press_event(clone!(
         result_treeview => move |_,key| {
         if key_is_ctrl_c(&key) {
-            results_to_clipboard(&result_treeview);
+            results_to_clipboard(&result_treeview, Some(1));
         };
 
         Inhibit(false)
@@ -173,7 +173,7 @@ pub fn gui_run() {
 
     clipboard_button.connect_clicked(clone!(
         result_treeview => move |_| {
-        results_to_clipboard(&result_treeview);
+        results_to_clipboard(&result_treeview, Some(1));
     }));
 
     window.show_all();
@@ -198,9 +198,9 @@ fn key_is_ctrl_c(key: &EventKey) -> bool {
             || keyval == key::Cyrillic_ES)
 }
 
-fn results_to_clipboard(treeview: &TreeView) {
+fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
-    let results = get_from_treeview_multiple(&treeview);
+    let results = get_from_treeview_multiple(&treeview, column);
     let to_clipboard = results.join("\n");
     clipboard.set_text(&to_clipboard);
     println!("copied to clipboard");

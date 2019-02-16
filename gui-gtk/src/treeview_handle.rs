@@ -6,35 +6,43 @@ use url::Url;
 
 use std::ffi::OsStr;
 
-pub fn get_from_treeview_single(treeview: &TreeView) -> Option<String> {
+pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Option<String> {
     let selection = treeview.get_selection();
     if let Some((model, iter)) = selection.get_selected() {
-        return Some(model.get_value(&iter, 0).get::<String>().unwrap());
+        return Some(
+            model
+                .get_value(&iter, column.unwrap_or(0))
+                .get::<String>()
+                .unwrap(),
+        );
     };
     None
 }
 
-pub fn get_from_treeview_all(treeview: &TreeView) -> Vec<String> {
+pub fn get_from_treeview_all(treeview: &TreeView, column: Option<i32>) -> Vec<String> {
     let selection = treeview.get_selection();
     let prev_mode = selection.get_mode();
     if let SelectionMode::None = prev_mode {
         selection.set_mode(SelectionMode::Multiple);
     };
     selection.select_all();
-    let all = get_from_treeview_multiple(&treeview);
+    let all = get_from_treeview_multiple(&treeview, column);
     selection.unselect_all();
     selection.set_mode(prev_mode);
     all
 }
 
-pub fn get_from_treeview_multiple(treeview: &TreeView) -> Vec<String> {
+pub fn get_from_treeview_multiple(treeview: &TreeView, column: Option<i32>) -> Vec<String> {
     let selection = treeview.get_selection();
     let (paths, model) = selection.get_selected_rows();
     paths
         .iter()
         .map(|path| {
             let iter = model.get_iter(path).unwrap();
-            model.get_value(&iter, 0).get::<String>().unwrap()
+            model
+                .get_value(&iter, column.unwrap_or(0))
+                .get::<String>()
+                .unwrap()
         })
         .collect::<Vec<String>>()
 }

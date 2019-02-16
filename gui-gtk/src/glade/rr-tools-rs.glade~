@@ -37,7 +37,23 @@ THE SOFTWARE.
     <columns>
       <!-- column-name result -->
       <column type="gchararray"/>
+      <!-- column-name type -->
+      <column type="gchararray"/>
     </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">21:01:030303</col>
+        <col id="1" translatable="yes">Parcel</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">21:03:030303:223</col>
+        <col id="1" translatable="yes">CadastralBlock</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">21:01:030303</col>
+        <col id="1" translatable="yes">Parcel</col>
+      </row>
+    </data>
   </object>
   <object class="GtkListStore" id="rrxml_store">
     <columns>
@@ -491,11 +507,17 @@ THE SOFTWARE.
                           <object class="GtkTreeViewColumn" id="result_view_column">
                             <property name="title" translatable="yes">result</property>
                             <property name="sort_indicator">True</property>
-                            <property name="sort_column_id">0</property>
+                            <property name="sort_column_id">1</property>
                             <child>
-                              <object class="GtkCellRendererAccel"/>
+                              <object class="GtkCellRendererAccel" id="result"/>
                               <attributes>
                                 <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                            <child>
+                              <object class="GtkCellRendererAccel" id="type"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -512,7 +534,7 @@ THE SOFTWARE.
                 </child>
                 <child>
                   <object class="GtkButton" id="clipboard_button">
-                    <property name="label" translatable="yes">copy to clipboard</property>
+                    <property name="label" translatable="yes">copy selected to clipboard</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>

@@ -16,9 +16,14 @@ pub fn get_from_treeview_single(treeview: &TreeView) -> Option<String> {
 
 pub fn get_from_treeview_all(treeview: &TreeView) -> Vec<String> {
     let selection = treeview.get_selection();
+    let prev_mode = selection.get_mode();
+    if let SelectionMode::None = prev_mode {
+        selection.set_mode(SelectionMode::Multiple);
+    };
     selection.select_all();
     let all = get_from_treeview_multiple(&treeview);
     selection.unselect_all();
+    selection.set_mode(prev_mode);
     all
 }
 
@@ -75,7 +80,11 @@ pub fn treeview_connect_with_drag_data_filtered(
             };
             println!("got {:?}", path);
             let path = path.to_str().unwrap();
-            store.insert_with_values(None, &[0], &[&path]);
+            store_insert(&store, path);
         }
     }));
+}
+
+pub fn store_insert(store: &ListStore, s: &str) {
+    store.insert_with_values(None, &[0], &[&s]);
 }

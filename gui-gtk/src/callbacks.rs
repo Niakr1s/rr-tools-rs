@@ -1,9 +1,5 @@
 use crate::global_stores::*;
-use crate::spinner_button::SpinnerButton;
-use gtk::{GtkListStoreExtManual, ListStore};
-use rr_tools_lib::rrxml::parcel::Parcel;
-use std::cell::RefCell;
-use std::sync::mpsc::Receiver;
+use gtk::GtkListStoreExtManual;
 
 pub fn receive_from_todxf_button() -> glib::Continue {
     GLOBAL_FOR_TODXF_BUTTON.with(|global| {

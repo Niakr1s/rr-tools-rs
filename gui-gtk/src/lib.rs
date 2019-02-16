@@ -66,16 +66,17 @@ pub fn gui_run() {
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
         w.set_sensitive(false);
-        let selection = rrxml_treeview.get_selection();
-        let (treepaths, model) = selection.get_selected_rows();
+        let rrxml_paths = get_from_treeview_all(&rrxml_treeview);
+        rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
+        for rrxml_path in rrxml_paths {
+            let rrxml = RrXml::from_file(&rrxml_path).expect("error while reading rrxml file");
 
-        for treepath in treepaths {
-            let iter = model.get_iter(&treepath).unwrap();
-            let filepath = model.get_value(&iter, 0).get::<String>().unwrap();
-            info!("filepath is {:?}", filepath);
-            let rrxml = RrXml::from_file(&filepath).expect("error while reading rrxml file");
-            let new_filepath = rrxml.rename_file().expect("error while renaming rrxml file");
-            rrxml_store.set(&iter, &[0], &[&new_filepath.to_value()]);
+            let new_filepath = rrxml.new_filepath();
+
+            store_insert(&rrxml_store, match rrxml.rename_file() {
+                Ok(_) => &new_filepath,
+                Err(_) => &rrxml_path,
+            });
         }
         w.set_sensitive(true);
     }));

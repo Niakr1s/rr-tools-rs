@@ -122,7 +122,7 @@ impl RrXml {
         Ok(new_filepath)
     }
 
-    fn new_filepath(&self) -> String {
+    pub fn new_filepath(&self) -> String {
         let path = Path::new(&self.path);
         let new_filename = format!("{} {}", self.typ, self.number.replace(":", " "));
         let mut new_path = path.with_file_name(new_filename);

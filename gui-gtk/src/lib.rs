@@ -23,7 +23,7 @@ use rr_tools_lib::rrxml::RrXml;
 use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Clipboard, ListStore, TreeView};
+use gtk::{Builder, Button, Clipboard, Dialog, ListStore, TreeView};
 
 use gdk::enums::key;
 
@@ -45,6 +45,8 @@ pub fn gui_run() {
     let builder = Builder::new_from_string(glade_src);
     let window: gtk::Window = builder.get_object("main_window").expect("bad glade file");
 
+    let about_dialog: Dialog = builder.get_object("about_dialog").expect("bad glade file");
+
     let rrxml_treeview: TreeView = builder.get_object("rrxml_view").expect("bad glade file");
     let rrxml_store: ListStore = builder.get_object("rrxml_store").expect("bad glade file");
     let mydxf_treeview: TreeView = builder.get_object("mydxf_view").expect("bad glade file");
@@ -59,6 +61,7 @@ pub fn gui_run() {
     let clipboard_button: Button = builder
         .get_object("clipboard_button")
         .expect("bad glade file");
+    let about_button: Button = builder.get_object("about_button").expect("bad glade file");
 
     window.set_keep_above(true);
 
@@ -67,6 +70,17 @@ pub fn gui_run() {
 
     treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
+
+    about_button.connect_clicked(clone!(about_dialog => move |_| {
+        about_dialog.run();
+    }));
+
+    about_dialog.connect_response(clone!(about_dialog => move |_, response| {
+        // GTK_RESPONSE_DELETE_EVENT or GTK_RESPONSE_CANCEL
+        if response == -4 || response == -6 {
+            about_dialog.hide();
+        }
+    }));
 
     clear_button.connect_clicked(clone!(rrxml_store => move |_| {
         rrxml_store.clear();

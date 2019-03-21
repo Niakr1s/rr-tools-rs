@@ -7,15 +7,14 @@ use url::Url;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Option<String> {
+pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Option<PathBuf> {
     let selection = treeview.get_selection();
     if let Some((model, iter)) = selection.get_selected() {
-        return Some(
-            model
-                .get_value(&iter, column.unwrap_or(0))
-                .get::<String>()
-                .unwrap(),
-        );
+        let res = model
+            .get_value(&iter, column.unwrap_or(0))
+            .get::<String>()
+            .unwrap();
+        return Some(PathBuf::from(res));
     };
     None
 }

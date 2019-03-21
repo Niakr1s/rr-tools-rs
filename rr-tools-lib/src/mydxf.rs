@@ -3,18 +3,18 @@ use crate::geometry::traits::rectangable::*;
 use dxf::entities::EntityType;
 use dxf::{Drawing, DxfResult};
 use std::fmt::{self, Display, Formatter};
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct MyDxf {
-    pub path: String,
+    pub path: PathBuf,
     pub entities: Entities,
 }
 
 impl MyDxf {
-    pub fn from_file(path: &str) -> DxfResult<MyDxf> {
-        debug!("attempt to parse dxf: {}", path);
-        let path = path.to_string();
-        let drawing = Drawing::load_file(&path)?;
+    pub fn from_file(path: PathBuf) -> DxfResult<MyDxf> {
+        debug!("attempt to parse dxf: {:?}", path);
+        let drawing = Drawing::load_file(path.to_str().unwrap())?;
         let entities = drawing_to_entities(drawing);
         let parsed = MyDxf { path, entities };
         debug!("succesfully parsed dxf: {}", parsed);
@@ -25,7 +25,7 @@ impl MyDxf {
 
 impl Display for MyDxf {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        writeln!(f, "MyDxf from {path}", path = self.path,)?;
+        writeln!(f, "MyDxf from {path:?}", path = self.path,)?;
         writeln!(f, "with {} entities", self.entities.len())?;
         writeln!(f)
     }
@@ -96,7 +96,7 @@ mod test {
     #[test]
     fn triangle_polyline() {
         let path = r"src\test_files\dxfs\triangle_polyline.dxf";
-        let my_dxf = MyDxf::from_file(path);
+        let my_dxf = MyDxf::from_file(PathBuf::from(path));
         assert!(my_dxf.is_ok(), "test file {} open error", path);
         let my_dxf = my_dxf.unwrap();
 
@@ -107,7 +107,7 @@ mod test {
     #[test]
     fn triangle_line() {
         let path = r"src\test_files\dxfs\triangle_line.dxf";
-        let my_dxf = MyDxf::from_file(path);
+        let my_dxf = MyDxf::from_file(PathBuf::from(path));
         assert!(my_dxf.is_ok(), "test file {} open error", path);
         let my_dxf = my_dxf.unwrap();
 
@@ -128,7 +128,7 @@ mod test {
     #[test]
     fn circle() {
         let path = r"src\test_files\dxfs\circle.dxf";
-        let my_dxf = MyDxf::from_file(path);
+        let my_dxf = MyDxf::from_file(PathBuf::from(path));
         assert!(my_dxf.is_ok(), "test file {} open error", path);
         let my_dxf = my_dxf.unwrap();
 
@@ -141,7 +141,7 @@ mod test {
     #[test]
     fn point() {
         let path = r"src\test_files\dxfs\point.dxf";
-        let my_dxf = MyDxf::from_file(path);
+        let my_dxf = MyDxf::from_file(PathBuf::from(path));
         assert!(my_dxf.is_ok(), "test file {} open error", path);
         let my_dxf = my_dxf.unwrap();
 

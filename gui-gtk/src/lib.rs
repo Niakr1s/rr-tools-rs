@@ -183,11 +183,11 @@ pub fn gui_run() {
                 Some(path) => path,
                 None => return,
             };
-            info!("starting check: {}", mydxf_path);
+            info!("starting check: {:?}", mydxf_path);
 
-            let mydxf = match MyDxf::from_file(&mydxf_path) {
+            let mydxf = match MyDxf::from_file(mydxf_path.clone()) {
                     Ok(file) => file,
-                    Err(_) => {error!("error while opening dxf file: {}", mydxf_path); return;},
+                    Err(_) => {error!("error while opening dxf file: {:?}", mydxf_path); return;},
                 };
 
             check_button.start();

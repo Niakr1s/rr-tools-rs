@@ -5,6 +5,7 @@ use gtk::*;
 use url::Url;
 
 use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
 
 pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Option<String> {
     let selection = treeview.get_selection();
@@ -19,7 +20,7 @@ pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Opt
     None
 }
 
-pub fn get_from_treeview_all(treeview: &TreeView, column: Option<i32>) -> Vec<String> {
+pub fn get_from_treeview_all(treeview: &TreeView, column: Option<i32>) -> Vec<PathBuf> {
     let selection = treeview.get_selection();
     let prev_mode = selection.get_mode();
     if let SelectionMode::None = prev_mode {
@@ -32,19 +33,20 @@ pub fn get_from_treeview_all(treeview: &TreeView, column: Option<i32>) -> Vec<St
     all
 }
 
-pub fn get_from_treeview_multiple(treeview: &TreeView, column: Option<i32>) -> Vec<String> {
+pub fn get_from_treeview_multiple(treeview: &TreeView, column: Option<i32>) -> Vec<PathBuf> {
     let selection = treeview.get_selection();
     let (paths, model) = selection.get_selected_rows();
     paths
         .iter()
         .map(|path| {
             let iter = model.get_iter(path).unwrap();
-            model
+            let s = model
                 .get_value(&iter, column.unwrap_or(0))
                 .get::<String>()
-                .unwrap()
+                .unwrap();
+            PathBuf::from(s)
         })
-        .collect::<Vec<String>>()
+        .collect()
 }
 
 // common for rrxml and mydxf views

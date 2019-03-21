@@ -124,17 +124,17 @@ pub fn gui_run() {
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
         for rrxml_path in rrxml_paths {
-            let rrxml = match RrXml::from_file(&rrxml_path) {
+            let rrxml = match RrXml::from_file(rrxml_path.clone()) {
                 Ok(rr) => rr,
-                Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
+                Err(_) => {error!("couldn't parse rrxml file: {:?}", rrxml_path); continue;},
             };
 
             let new_filepath = match rrxml.rename_file() {
                 Ok(path) => path,
-                Err(_) => {error!("error while renaming file: {}", rrxml_path); continue;},
+                Err(_) => {error!("error while renaming file: {:?}", rrxml_path); continue;},
             };
 
-            store_insert(&rrxml_store, &new_filepath);
+            store_insert(&rrxml_store, new_filepath.to_str().unwrap());
         }
         w.set_sensitive(true);
     }));
@@ -158,12 +158,12 @@ pub fn gui_run() {
         thread::spawn(move || {
             let mut succesful = vec![];
             for rrxml_path in rrxml_paths {
-                let rrxml = match RrXml::from_file(&rrxml_path) {
+                let rrxml = match RrXml::from_file(rrxml_path.clone()) {
                     Ok(rr) => rr,
-                    Err(_) => {error!("couldn't parse rrxml file: {}", rrxml_path); continue;},
+                    Err(_) => {error!("couldn't parse rrxml file: {:?}", rrxml_path); continue;},
                 };
                 match rrxml.save_to_dxf() {
-                    Ok(_) => {info!("succesfully converted to dxf: {}", rrxml_path); succesful.push(rrxml_path)},
+                    Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml_path); succesful.push(rrxml_path)},
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml_path),
                 };
             }
@@ -199,9 +199,9 @@ pub fn gui_run() {
             thread::spawn(move || {
                 let mut rrxmls = vec![];
                 for rrxml in rrxml_paths {
-                        match RrXml::from_file(&rrxml) {
+                        match RrXml::from_file(rrxml.clone()) {
                             Ok(file) => rrxmls.push(file),
-                            Err(_) => {error!("error while opening xml file: {}", rrxml)},
+                            Err(_) => {error!("error while opening xml file: {:?}", rrxml)},
                     }
                 }
                 let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
@@ -252,8 +252,12 @@ fn key_is_ctrl_c(key: &EventKey) -> bool {
 
 fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
-    let results = get_from_treeview_multiple(&treeview, column);
-    let to_clipboard = results.join("\n");
+    let result = get_from_treeview_multiple(&treeview, column);
+    let to_clipboard = result
+        .iter()
+        .map(|x| x.to_str().unwrap())
+        .collect::<Vec<&str>>()
+        .join("\n");
     clipboard.set_text(&to_clipboard);
     info!("copied to clipboard:\n{}", to_clipboard);
 }

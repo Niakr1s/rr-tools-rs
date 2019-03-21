@@ -9,7 +9,7 @@ pub fn receive_from_todxf_button() -> glib::Continue {
                 if let Ok(rrxmls) = result {
                     store.clear();
                     for rrxml in rrxmls {
-                        store_insert(&store, &rrxml);
+                        store_insert(&store, rrxml.to_str().unwrap());
                     }
                 }
                 button.stop();

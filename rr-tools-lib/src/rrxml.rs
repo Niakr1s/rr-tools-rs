@@ -21,13 +21,13 @@ pub struct RrXmls {
 }
 
 impl RrXmls {
-    pub fn from_files(paths: Vec<String>) -> RrXmls {
+    pub fn from_files(paths: Vec<PathBuf>) -> RrXmls {
         let mut rrxmls = Vec::with_capacity(paths.len());
         for rrxml_path in paths {
-            let rrxml = match RrXml::from_file(&rrxml_path) {
+            let rrxml = match RrXml::from_file(rrxml_path.clone()) {
                 Ok(rr) => rr,
                 Err(_) => {
-                    error!("couldn't parse rrxml file: {}", rrxml_path);
+                    error!("couldn't parse rrxml file: {:?}", rrxml_path);
                     continue;
                 }
             };
@@ -60,17 +60,16 @@ impl RrXmls {
 
 #[derive(Debug, Clone)]
 pub struct RrXml {
-    pub path: String,
+    pub path: PathBuf,
     pub typ: String,
     pub number: String,
     pub parcels: Vec<Parcel>,
 }
 
 impl RrXml {
-    pub fn from_file(path: &str) -> Result<RrXml, Box<dyn Error>> {
-        debug!("attempt to parse xml: {}", path);
-        let file_content = file_to_string(path)?;
-        let path = path.to_string();
+    pub fn from_file(path: PathBuf) -> Result<RrXml, Box<dyn Error>> {
+        debug!("attempt to parse xml: {:?}", path);
+        let file_content = file_to_string(&path)?;
 
         let parsed = RrXml::parse(&file_content)?;
         debug!("succesfully parsed xml: {}", parsed);
@@ -130,7 +129,7 @@ impl RrXml {
         }
 
         let res = RrXml {
-            path: String::new(),
+            path: PathBuf::new(),
             typ,
             number,
             parcels,
@@ -163,27 +162,28 @@ impl RrXml {
         self.parcels.is_empty()
     }
 
-    pub fn rename_file(&self) -> io::Result<String> {
+    pub fn rename_file(&self) -> io::Result<PathBuf> {
         let new_filepath = self.new_filepath();
         if self.new_filepath() == self.path {
-            info!("no need to rename: {}", self.path);
+            info!("no need to rename: {:?}", self.path);
             return Ok(new_filepath); // here new_filepath == self.path, so we can move out
         }
-        info!("trying to rename: {}", self.path);
+        info!("trying to rename: {:?}", self.path);
         fs::rename(&self.path, &new_filepath)?;
-        info!("succesfully renamed to: {}", new_filepath);
+        info!("succesfully renamed to: {:?}", new_filepath);
         Ok(new_filepath)
     }
 
-    pub fn new_filepath(&self) -> String {
-        let path = Path::new(&self.path);
-        let new_filename = format!("{} {}", self.typ, self.number.replace(":", " "));
-        let mut new_path = path.with_file_name(new_filename);
-        if let Some(ext) = path.extension() {
-            new_path.set_extension(ext);
-        }
-        debug!("rrxml old path: {:?}, new path: {:?}", path, new_path);
-        new_path.to_str().unwrap().to_string()
+    pub fn new_filepath(&self) -> PathBuf {
+        let mut new_path = self.path.clone();
+        new_path.set_file_name(format!(
+            "{} {}.{}",
+            self.typ,
+            self.number.replace(":", " "),
+            self.path.extension().unwrap().to_str().unwrap()
+        ));
+        debug!("rrxml old path: {:?}, new path: {:?}", self.path, new_path);
+        new_path
     }
 
     pub fn save_to_dxf(&self) -> DxfResult<()> {
@@ -225,7 +225,7 @@ impl Display for RrXml {
         writeln!(
             f,
             "RrXml {typ} {number} from {path}",
-            path = self.path,
+            path = self.path.to_str().unwrap(),
             typ = self.typ,
             number = self.number,
         )?;
@@ -237,7 +237,7 @@ impl Display for RrXml {
     }
 }
 
-fn file_to_string(filename: &str) -> Result<String, Box<dyn Error>> {
+fn file_to_string(filename: &Path) -> Result<String, Box<dyn Error>> {
     let mut f = File::open(filename)?;
     let mut file_content = String::new();
     f.read_to_string(&mut file_content)?;
@@ -272,6 +272,7 @@ fn point_from_node_chunk(node: &roxmltree::Node<'_, '_>) -> Result<Point, Box<dy
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::ffi::OsStr;
 
     const KPT: &str = r"src\test_files\xmls\KPT CadastralBlock 77 03 0009007.xml";
     const KVZU: &str = r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml";
@@ -286,11 +287,11 @@ mod test {
                                     </SpelementUnit>"#;
 
     fn kpt() -> RrXml {
-        RrXml::from_file(KPT).unwrap()
+        RrXml::from_file(KPT.into()).unwrap()
     }
 
     fn kvzu() -> RrXml {
-        RrXml::from_file(KVZU).unwrap()
+        RrXml::from_file(KVZU.into()).unwrap()
     }
 
     #[test]
@@ -377,10 +378,16 @@ mod test {
     #[test]
     fn new_filename() {
         let rr = kpt();
-        assert!(rr.new_filepath().ends_with("KPT 77 03 0009007.xml"));
+        assert_eq!(
+            rr.new_filepath().file_name(),
+            Some(OsStr::new("KPT 77 03 0009007.xml"))
+        );
 
         let rr = kvzu();
-        assert!(rr.new_filepath().ends_with("KVZU 21 01 010206 115.xml"));
+        assert_eq!(
+            rr.new_filepath().file_name(),
+            Some(OsStr::new("KVZU 21 01 010206 115.xml"))
+        );
     }
 
     #[test]

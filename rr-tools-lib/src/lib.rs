@@ -62,12 +62,16 @@ mod test {
 
     #[test]
     fn test_dxf() {
-        let rr_block =
-            RrXml::from_file(r"src\test_files\xmls\KPT CadastralBlock 77 03 0009007.xml").unwrap();
+        let rr_block = RrXml::from_file(
+            Path::new(r"src\test_files\xmls\KPT CadastralBlock 77 03 0009007.xml").to_path_buf(),
+        )
+        .unwrap();
         println!("{}", rr_block);
 
-        let rr_parcel =
-            RrXml::from_file(r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml").unwrap();
+        let rr_parcel = RrXml::from_file(
+            Path::new(r"src\test_files\xmls\KVZU Parcel 21 01 010206 115.xml").to_path_buf(),
+        )
+        .unwrap();
         println!("{}", rr_parcel);
 
         let mydxf = MyDxf::from_file(r"src\test_files\mydxfs\6 1228.dxf").unwrap();
@@ -88,7 +92,7 @@ mod test {
             if let Ok(f) = f {
                 if let Some(ext) = f.path().extension() {
                     if ext == "xml" {
-                        let rrxml = RrXml::from_file(f.path().to_str().unwrap()).unwrap();
+                        let rrxml = RrXml::from_file(f.path()).unwrap();
                         rrxmls.push(rrxml);
                     }
                 }

@@ -35,6 +35,27 @@ impl RrXmls {
         }
         RrXmls { rrxmls }
     }
+    pub fn save_to_dxf(&self, path: &str) -> DxfResult<()> {
+        let mut path = PathBuf::from(path);
+        path.set_extension("dxf");
+        let path = path.to_str().unwrap();
+        self.to_drawing().save_file(path)
+    }
+
+    pub fn to_entities(&self) -> Vec<DxfEntity> {
+        let mut entities = vec![];
+        for r in &self.rrxmls {
+            entities.append(&mut r.to_entities());
+        }
+        entities
+    }
+
+    fn to_drawing(&self) -> Drawing {
+        Drawing {
+            entities: self.to_entities(),
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

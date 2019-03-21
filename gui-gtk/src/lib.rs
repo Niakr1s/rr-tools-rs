@@ -20,12 +20,11 @@ use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::RrXml;
 
+use gdk::enums::key;
 use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Clipboard, Dialog, ListStore, TreeView};
-
-use gdk::enums::key;
+use gtk::{Builder, Button, Clipboard, Dialog, DrawingArea, ListStore, TreeView};
 
 use std::sync::mpsc;
 use std::thread;
@@ -65,6 +64,7 @@ pub fn gui_run() {
         .get_object("clipboard_button")
         .expect("bad glade file");
     let about_button: Button = builder.get_object("about_button").expect("bad glade file");
+    let drawing_area: DrawingArea = builder.get_object("drawing_area").expect("bad glade file");
 
     window.set_keep_above(true);
 
@@ -73,6 +73,20 @@ pub fn gui_run() {
 
     treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
+
+    drawing_area.connect_draw(clone!(drawing_area => move |_, cr| {
+        let x_h = drawing_area.get_allocated_width();
+        let y_h = drawing_area.get_allocated_height();
+        cr.set_source_rgb(255.0, 255.0, 255.0);
+        cr.paint();
+        // draw 100 random black lines
+        cr.set_source_rgb(0.0, 0.0, 0.0);
+        cr.move_to(x_h as f64 * 0.5, y_h as f64 * 0.5);
+        cr.line_to(x_h as f64 * 0.6, y_h as f64 * 0.6);
+        cr.stroke();
+
+        Inhibit(false)
+    }));
 
     about_button.connect_clicked(clone!(about_dialog => move |_| {
         info!("about_button clicked");

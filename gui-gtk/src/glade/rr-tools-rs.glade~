@@ -71,7 +71,6 @@ THE SOFTWARE.
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
                 <property name="baseline_position">top</property>
                 <child>
                   <object class="GtkBox">
@@ -619,7 +618,7 @@ THE SOFTWARE.
             <property name="can_focus">True</property>
             <property name="margin_left">10</property>
             <child>
-              <object class="GtkDrawingArea">
+              <object class="GtkDrawingArea" id="drawing_area">
                 <property name="height_request">500</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>

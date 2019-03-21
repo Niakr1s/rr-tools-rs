@@ -3,50 +3,29 @@ use super::*;
 #[test]
 fn lines_intersect_check1() {
     // should be false
-    let seg1 = (
-        &Point::new(1., 1., None),
-        &Point::new(10., 1., None),
-    );
-    let seg2 = (
-        &Point::new(1., 2., None),
-        &Point::new(10., 2., None),
-    );
+    let seg1 = (&Point::new(1., 1., None), &Point::new(10., 1., None));
+    let seg2 = (&Point::new(1., 2., None), &Point::new(10., 2., None));
     assert!(!lines_intersect(seg1, seg2));
 }
 
 #[test]
 fn lines_intersect_check2() {
     // should be true
-    let seg1 = (
-        &Point::new(10., 0., None),
-        &Point::new(0., 10., None),
-    );
-    let seg2 = (
-        &Point::new(0., 0., None),
-        &Point::new(10., 10., None),
-    );
+    let seg1 = (&Point::new(10., 0., None), &Point::new(0., 10., None));
+    let seg2 = (&Point::new(0., 0., None), &Point::new(10., 10., None));
     assert!(lines_intersect(seg1, seg2));
 }
 #[test]
 fn lines_intersect_check3() {
     // should be false
-    let seg1 = (
-        &Point::new(-5., -5., None),
-        &Point::new(0., 0., None),
-    );
-    let seg2 = (
-        &Point::new(1., 1., None),
-        &Point::new(10., 10., None),
-    );
+    let seg1 = (&Point::new(-5., -5., None), &Point::new(0., 0., None));
+    let seg2 = (&Point::new(1., 1., None), &Point::new(10., 10., None));
     assert!(!lines_intersect(seg1, seg2));
 }
 
 #[test]
 fn same_lines_intersect() {
-    let seg1 = (
-        &Point::new(10., 0., None),
-        &Point::new(0., 0., None),
-    );
+    let seg1 = (&Point::new(10., 0., None), &Point::new(0., 0., None));
     assert!(lines_intersect(seg1, seg1.clone()));
 }
 
@@ -68,7 +47,7 @@ fn point_inside_contur_check1_ok() {
             Point::new(-3., 3., None),
             Point::new(3., 3., None),
             Point::new(3., -3., None),
-            Point::new(-3., -3., None)
+            Point::new(-3., -3., None),
         ],
     };
     assert!(circle_inside_contur(&p, &c));
@@ -97,7 +76,7 @@ fn circle_inside_contur_ok() {
             Point::new(-3., 3., None),
             Point::new(3., 3., None),
             Point::new(3., -3., None),
-            Point::new(-3., -3., None)
+            Point::new(-3., -3., None),
         ],
     };
     assert!(circle_inside_contur(&p, &c));
@@ -115,7 +94,7 @@ fn circle_relate_contur_ok() {
             Point::new(-3., 3., None),
             Point::new(3., 3., None),
             Point::new(3., -3., None),
-            Point::new(-3., -3., None)
+            Point::new(-3., -3., None),
         ],
     };
     assert!(!circle_relate_contur(&p, &c));
@@ -130,18 +109,9 @@ fn circle_relate_line_check() {
     let c2 = Point::new(0., 0., Some(2.));
     let c3 = Point::new(0., 0., Some(3.));
     let p = Point::new(2., 0., None);
-    let poly1 = (
-        Point::new(2., -1., None),
-        Point::new(2., 1., None),
-    );
-    let poly2 = (
-        Point::new(2., -1., None),
-        Point::new(2., 0., None),
-    );
-    let poly3 = (
-        Point::new(2., -1., None),
-        Point::new(2., -0.001, None),
-    );
+    let poly1 = (Point::new(2., -1., None), Point::new(2., 1., None));
+    let poly2 = (Point::new(2., -1., None), Point::new(2., 0., None));
+    let poly3 = (Point::new(2., -1., None), Point::new(2., -0.001, None));
     assert!(!circle_relate_line(&c1, (&poly1.0, &poly1.1)));
     assert!(circle_relate_line(&c2, (&poly1.0, &poly1.1)));
     assert!(circle_relate_line(&c3, (&poly1.0, &poly1.1)));
@@ -161,10 +131,7 @@ fn circle_relate_line_check() {
 #[test]
 fn circle_relate_line_inside() {
     let c = Point::new(0., 0., Some(3.));
-    let poly = (
-        Point::new(1., 1., None),
-        Point::new(0., 0., None),
-    );
+    let poly = (Point::new(1., 1., None), Point::new(0., 0., None));
     assert!(circle_relate_line(&c, (&poly.0, &poly.1)));
 }
 

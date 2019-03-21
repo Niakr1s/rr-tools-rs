@@ -2,9 +2,21 @@ use super::*;
 
 /// In this test module result should be with reversed coordinates
 
-const P1: Point = Point { x: 1.5, y: 1.5, r: None };
-const P2: Point = Point { x: 2.5, y: 2.5, r: None };
-const P3: Point = Point { x: -3.0, y: 2.0, r: None };
+const P1: Point = Point {
+    x: 1.5,
+    y: 1.5,
+    r: None,
+};
+const P2: Point = Point {
+    x: 2.5,
+    y: 2.5,
+    r: None,
+};
+const P3: Point = Point {
+    x: -3.0,
+    y: 2.0,
+    r: None,
+};
 
 #[test]
 fn triangle_polyline() {

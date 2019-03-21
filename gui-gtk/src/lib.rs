@@ -18,7 +18,7 @@ mod treeview_handle;
 
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
-use rr_tools_lib::rrxml::RrXml;
+use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
 use gdk::enums::key;
 use gdk::{Display, EventKey, ModifierType};

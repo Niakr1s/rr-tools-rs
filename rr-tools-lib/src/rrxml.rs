@@ -16,7 +16,26 @@ use parcel::Parcel;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
+pub struct RrXmls {
+    pub rrxmls: Vec<RrXml>,
+}
 
+impl RrXmls {
+    pub fn from_files(paths: Vec<String>) -> RrXmls {
+        let mut rrxmls = Vec::with_capacity(paths.len());
+        for rrxml_path in paths {
+            let rrxml = match RrXml::from_file(&rrxml_path) {
+                Ok(rr) => rr,
+                Err(_) => {
+                    error!("couldn't parse rrxml file: {}", rrxml_path);
+                    continue;
+                }
+            };
+            rrxmls.push(rrxml);
+        }
+        RrXmls { rrxmls }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct RrXml {

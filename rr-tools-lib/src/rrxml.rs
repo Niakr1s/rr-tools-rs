@@ -99,7 +99,7 @@ impl RrXml {
     }
 
     pub fn is_kpt(&self) -> bool {
-        if self.number.split(":").collect::<Vec<&str>>().len() == 3 {
+        if self.number.split(':').count() == 3 {
             return true;
         }
         false
@@ -115,6 +115,10 @@ impl RrXml {
 
     pub fn len(&self) -> usize {
         self.parcels.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.parcels.is_empty()
     }
 
     pub fn rename_file(&self) -> io::Result<String> {
@@ -137,7 +141,7 @@ impl RrXml {
             new_path.set_extension(ext);
         }
         debug!("rrxml old path: {:?}, new path: {:?}", path, new_path);
-        format!("{}", new_path.to_str().unwrap())
+        new_path.to_str().unwrap().to_string()
     }
 
     pub fn save_to_dxf(&self) -> DxfResult<()> {

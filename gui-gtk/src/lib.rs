@@ -81,8 +81,8 @@ pub fn gui_run() {
         cr.paint();
         // draw 100 random black lines
         cr.set_source_rgb(0.0, 0.0, 0.0);
-        cr.move_to(x_h as f64 * 0.5, y_h as f64 * 0.5);
-        cr.line_to(x_h as f64 * 0.6, y_h as f64 * 0.6);
+        cr.move_to(f64::from(x_h) * 0.5, f64::from(y_h) * 0.5);
+        cr.line_to(f64::from(x_h) * 0.6, f64::from(y_h) * 0.6);
         cr.stroke();
 
         Inhibit(false)

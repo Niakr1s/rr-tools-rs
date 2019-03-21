@@ -89,17 +89,11 @@ impl Point {
     }
 
     pub fn is_circle(&self) -> bool {
-        match self.r {
-            Some(_) => true,
-            None => false,
-        }
+        self.r.is_some()
     }
 
     pub fn is_point(&self) -> bool {
-        match self.r {
-            Some(_) => false,
-            None => true,
-        }
+        self.r.is_none()
     }
 
     pub fn get_radius(&self) -> f64 {
@@ -110,14 +104,16 @@ impl Point {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Contur {
     pub points: Vec<Point>,
 }
 
 impl Contur {
     pub fn new() -> Contur {
-        Contur { points: vec![] }
+        Contur {
+            ..Default::default()
+        }
     }
     pub fn push(&mut self, p: Point) {
         self.points.push(p)
@@ -135,6 +131,9 @@ impl Contur {
     }
     pub fn len(&self) -> usize {
         self.points.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.points.is_empty()
     }
 }
 

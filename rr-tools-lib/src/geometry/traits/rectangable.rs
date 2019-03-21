@@ -20,7 +20,7 @@ pub trait Rectangable {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Rect {
     xmax: f64,
     ymax: f64,
@@ -32,11 +32,8 @@ pub struct Rect {
 impl Rect {
     pub fn new() -> Rect {
         Rect {
-            xmax: 0.,
-            ymax: 0.,
-            xmin: 0.,
-            ymin: 0.,
             empty: true,
+            ..Default::default()
         }
     }
 

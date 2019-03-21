@@ -26,7 +26,7 @@ pub fn check_mydxf_in_rrxmls(mydxf: &MyDxf, rrxmls: Vec<RrXml>) -> Option<Vec<Pa
 }
 
 pub fn check_mydxf_in_rrxml(mydxf: &MyDxf, rrxml: &RrXml) -> Option<Vec<Parcel>> {
-    if rrxml.len() == 0 {
+    if rrxml.is_empty() {
         return None;
     };
 

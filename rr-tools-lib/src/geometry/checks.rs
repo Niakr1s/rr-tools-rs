@@ -23,9 +23,10 @@ pub fn lines_intersect(line1: (&Point, &Point), line2: (&Point, &Point)) -> bool
         if val == 0. {
             return 0;
         }; //collinear
-        match val > 0. {
-            true => 1,  //clockwise
-            false => 2, //counterclockwise
+        if val > 0. {
+            1 //clockwise
+        } else {
+            2 //counterclockwise
         }
     }
 

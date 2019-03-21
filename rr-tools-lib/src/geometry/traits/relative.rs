@@ -64,12 +64,12 @@ impl Relative for Entity {
         match self {
             Entity::Point(ref self_point) => match entity {
                 Entity::Point(ref other_point) => {
-                    match circle_inside_circle(self_point, other_point) {
-                        true => Some(Relation::Inside),
-                        false => match circle_intersect_circle(self_point, other_point) {
-                            true => Some(Relation::Intersect),
-                            false => None,
-                        },
+                    if circle_inside_circle(self_point, other_point) {
+                        Some(Relation::Inside)
+                    } else if circle_intersect_circle(self_point, other_point) {
+                        Some(Relation::Intersect)
+                    } else {
+                        None
                     }
                 }
 
@@ -160,12 +160,12 @@ impl Relative for Entity {
                     self_first = self_p;
                 }
 
-                match inpolygon {
-                    true => Some(Relation::Inside),
-                    false => match intersect {
-                        true => Some(Relation::Intersect),
-                        false => None,
-                    },
+                if inpolygon {
+                    Some(Relation::Inside)
+                } else if intersect {
+                    Some(Relation::Intersect)
+                } else {
+                    None
                 }
             }
         }

@@ -83,7 +83,7 @@ pub fn treeview_connect_with_drag_data_filtered(
         for file in d.get_uris() {
             let url = Url::parse(&file).expect("bad uri");
             let path = url.to_file_path().unwrap();
-            if !(path.extension() == accepted_ext) {
+            if path.extension() != accepted_ext {
                 continue;
             };
             info!("got via drag&drop: {:?}", path);

@@ -5,7 +5,7 @@ use gtk::*;
 use url::Url;
 
 use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub fn get_from_treeview_single(treeview: &TreeView, column: Option<i32>) -> Option<PathBuf> {
     let selection = treeview.get_selection();

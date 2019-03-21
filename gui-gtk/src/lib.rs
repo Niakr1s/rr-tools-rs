@@ -151,19 +151,20 @@ pub fn gui_run() {
 
         let merge_or = yes_or_no(&window, "Merge or not?");
         let merged_path = if merge_or { get_file_path(&window, "Where to merge dxfs?")} else {None};
+        let merged_path = merged_path.unwrap();
 
         thread::spawn(move || {
             let mut succesful = vec![];
-            for rrxml_path in rrxml_paths {
-                let rrxml = match RrXml::from_file(rrxml_path.clone()) {
-                    Ok(rr) => rr,
-                    Err(_) => {error!("couldn't parse rrxml file: {:?}", rrxml_path); continue;},
-                };
+            let rrxmls = RrXmls::from_files(rrxml_paths);
+            for rrxml in &rrxmls.rrxmls {
                 match rrxml.save_to_dxf() {
-                    Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml_path); succesful.push(rrxml_path)},
-                    Err(_) => error!("error while converting to dxf: {:?}", rrxml_path),
+                    Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml.path); succesful.push(rrxml.path.clone())},
+                    Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
                 };
             }
+            if rrxmls.save_to_dxf(merged_path.clone()).is_err() {
+                error!("error while merging to {:?}", merged_path);  // todo add modal error window
+            };
             tx.send(Ok(succesful)).unwrap();
             glib::idle_add(receive_from_todxf_button);
         });
@@ -292,7 +293,7 @@ fn get_file_path(window: &gtk::Window, s: &str) -> Option<PathBuf> {
 
     dialog.run();
     let path = dialog.get_filename();
-    println!("{:?}", path);
+    info!("Got {:?} from FileChooserDialog", path);
     dialog.destroy();
     path
 }

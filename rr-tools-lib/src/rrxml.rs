@@ -35,9 +35,9 @@ impl RrXmls {
         }
         RrXmls { rrxmls }
     }
-    pub fn save_to_dxf(&self, path: &str) -> DxfResult<()> {
-        let mut path = PathBuf::from(path);
+    pub fn save_to_dxf(&self, mut path: PathBuf) -> DxfResult<()> {
         path.set_extension("dxf");
+        info!("attempt to merge to dxf: {:?}", path);
         let path = path.to_str().unwrap();
         self.to_drawing().save_file(path)
     }

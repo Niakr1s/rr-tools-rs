@@ -25,10 +25,11 @@ use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
 use gtk::{
-    Builder, Button, ButtonsType, Clipboard, Dialog, DialogFlags, DrawingArea, ListStore,
-    MessageDialog, MessageType, ResponseType, TreeView,
+    Builder, Button, ButtonsType, Clipboard, Dialog, DialogFlags, DrawingArea, FileChooserAction,
+    FileChooserDialog, ListStore, MessageDialog, MessageType, ResponseType, TreeView,
 };
 
+use std::path::PathBuf;
 use std::sync::mpsc;
 use std::thread;
 
@@ -152,6 +153,7 @@ pub fn gui_run() {
         }));
 
         let merge_or = yes_or_no(&window, "Merge or not?");
+        let merged_path = if merge_or { get_file_path(&window, "Where to merge dxfs?")} else {None};
 
         thread::spawn(move || {
             let mut succesful = vec![];
@@ -268,4 +270,22 @@ fn yes_or_no(window: &gtk::Window, s: &str) -> bool {
     let dialog_result = dialog.run();
     dialog.destroy();
     dialog_result == ResponseType::Yes.into()
+}
+
+fn get_file_path(window: &gtk::Window, s: &str) -> Option<PathBuf> {
+    let dialog = FileChooserDialog::with_buttons(
+        Some(s),
+        Some(window),
+        FileChooserAction::Save,
+        &[
+            ("_Cancel", ResponseType::Cancel),
+            ("_Open", ResponseType::Accept),
+        ],
+    );
+    dialog.set_keep_above(true);
+    let dialog_result = dialog.run();
+    let path = dialog.get_filename();
+    println!("{:?}", path);
+    dialog.destroy();
+    path
 }

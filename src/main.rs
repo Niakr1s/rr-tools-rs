@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"] // disables cmd window
 
 #[allow(unused_imports)]
 #[macro_use]

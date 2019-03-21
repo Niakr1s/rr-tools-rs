@@ -24,7 +24,10 @@ use gdk::enums::key;
 use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Clipboard, Dialog, DrawingArea, ListStore, TreeView};
+use gtk::{
+    Builder, Button, ButtonsType, Clipboard, Dialog, DialogFlags, DrawingArea, ListStore,
+    MessageDialog, MessageType, ResponseType, TreeView,
+};
 
 use std::sync::mpsc;
 use std::thread;
@@ -75,6 +78,7 @@ pub fn gui_run() {
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
 
     drawing_area.connect_draw(clone!(drawing_area => move |_, cr| {
+        // todo
         let x_h = drawing_area.get_allocated_width();
         let y_h = drawing_area.get_allocated_height();
         cr.set_source_rgb(255.0, 255.0, 255.0);
@@ -134,7 +138,7 @@ pub fn gui_run() {
         w.set_sensitive(true);
     }));
 
-    todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview => move |_| {
+    todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window => move |_| {
         info!("todxf_button clicked");
         todxf_button.start();
 
@@ -146,7 +150,10 @@ pub fn gui_run() {
         GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store => move |global| {
             *global.borrow_mut() = Some((todxf_button, rrxml_store, rx))
         }));
-        let _handle = thread::spawn(move || {
+
+        let merge_or = yes_or_no(&window, "Merge or not?");
+
+        thread::spawn(move || {
             let mut succesful = vec![];
             for rrxml_path in rrxml_paths {
                 let rrxml = match RrXml::from_file(&rrxml_path) {
@@ -187,7 +194,7 @@ pub fn gui_run() {
             GLOBAL_FOR_CHECK_BUTTON.with(clone!(check_button, result_store => move |global| {
                 *global.borrow_mut() = Some((check_button, result_store, rx))
             }));
-            let _handle = thread::spawn(move || {
+            thread::spawn(move || {
                 let mut rrxmls = vec![];
                 for rrxml in rrxml_paths {
                         match RrXml::from_file(&rrxml) {
@@ -221,8 +228,8 @@ pub fn gui_run() {
 
     window.show_all();
 
-    window.connect_delete_event(move |win, _| {
-        win.destroy();
+    window.connect_delete_event(move |_win, _| {
+        gtk::main_quit();
         Inhibit(false)
     });
 
@@ -247,4 +254,18 @@ fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     let to_clipboard = results.join("\n");
     clipboard.set_text(&to_clipboard);
     info!("copied to clipboard:\n{}", to_clipboard);
+}
+
+fn yes_or_no(window: &gtk::Window, s: &str) -> bool {
+    let dialog = MessageDialog::new(
+        Some(window),
+        DialogFlags::MODAL,
+        MessageType::Info,
+        ButtonsType::YesNo,
+        s,
+    );
+    dialog.set_keep_above(true);
+    let dialog_result = dialog.run();
+    dialog.destroy();
+    dialog_result == ResponseType::Yes.into()
 }

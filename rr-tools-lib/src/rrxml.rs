@@ -16,6 +16,8 @@ use parcel::Parcel;
 
 const CADASTRAL_NUMBER: &str = "CadastralNumber";
 
+
+
 #[derive(Debug, Clone)]
 pub struct RrXml {
     pub path: String,

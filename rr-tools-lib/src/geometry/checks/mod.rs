@@ -62,43 +62,36 @@ pub fn lines_intersect(line1: (&Point, &Point), line2: (&Point, &Point)) -> bool
 
 /// both for circles and points
 pub fn circle_inside_contur(p: &Point, c: &Contur) -> bool {
-    let inside = match c.is_closed() {
-        true => {
-            let mut inside = false;
-            // here inside can change
-            let n = c.points.len();
-            let mut p1 = &c.points[0];
-            for i in 1..=n {
-                let p2 = &c.points[i % n];
-                if p.y > p1.y.min(p2.y) {
-                    if p.y <= p1.y.max(p2.y) {
-                        if p.x <= p1.x.max(p2.x) {
-                            let xinters = if p1.y != p2.y {
-                                Some((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x)
-                            } else {
-                                None
-                            };
-                            let x_le_xinters = match xinters {
-                                Some(xinters) => p.x <= xinters,
-                                None => false,
-                            };
-                            if p1.x == p2.x || x_le_xinters {
-                                inside = !inside;
-                            };
-                        };
-                    }
-                }
-                p1 = p2;
+    let inside = if c.is_closed() {
+        let mut inside = false;
+        // here inside can change
+        let n = c.points.len();
+        let mut p1 = &c.points[0];
+        for i in 1..=n {
+            let p2 = &c.points[i % n];
+            if p.y > p1.y.min(p2.y) && p.y <= p1.y.max(p2.y) && p.x <= p1.x.max(p2.x) {
+                let xinters = if (p1.y - p2.y).abs() > 0.000_001 {
+                    Some((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x)
+                } else {
+                    None
+                };
+                let x_le_xinters = match xinters {
+                    Some(xinters) => p.x <= xinters,
+                    None => false,
+                };
+                if (p1.x - p2.x).abs() < 0.000_001 || x_le_xinters {
+                    inside = !inside;
+                };
             }
-            inside
+            p1 = p2;
         }
-        false => false,
+        inside
+    } else {
+        false
     };
 
-    if inside {
-        if p.is_circle() {
-            return !circle_relate_contur(p, c);
-        }
+    if inside && p.is_circle() {
+        return !circle_relate_contur(p, c);
     };
     inside
 }

@@ -140,13 +140,12 @@ pub fn gui_run() {
 
         let (tx, rx) = mpsc::channel();
 
-        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store => move |global| {
-            *global.borrow_mut() = Some((todxf_button, rrxml_store, rx))
+        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store, window => move |global| {
+            *global.borrow_mut() = Some((todxf_button, rrxml_store, window, rx))
         }));
 
-        let merge_or = yes_or_no(&window, "Merge or not?");
-        let merged_path = if merge_or { get_file_path(&window, "Where to merge dxfs?")} else {None};
-        let merged_path = merged_path.unwrap();
+        let merge_or = yes_or_no(Some(&window), "Merge into one dxf?");
+        let merged_path = if merge_or { choose_file(Some(&window), "Where to merge dxfs?")} else {None};
 
         thread::spawn(move || {
             let mut succesful = vec![];
@@ -157,10 +156,16 @@ pub fn gui_run() {
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
                 };
             }
-            if rrxmls.save_to_dxf(merged_path.clone()).is_err() {
-                error!("error while merging to {:?}", merged_path);  // todo add modal error window
+            let merged_result = match merged_path {
+                Some(p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
+                    error!("error while merging to {:?}", p);
+                    Err(p)
+                } else {
+                    Ok(())
+                },
+                None => Ok(()),
             };
-            tx.send(Ok(succesful)).unwrap();
+            tx.send((Ok(succesful),merged_result)).unwrap();
             glib::idle_add(receive_from_todxf_button);
         });
     }));
@@ -255,24 +260,37 @@ fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
     info!("copied to clipboard:\n{}", to_clipboard);
 }
 
-fn yes_or_no(window: &gtk::Window, s: &str) -> bool {
+fn yes_or_no(window: Option<&gtk::Window>, s: &str) -> bool {
     let dialog = MessageDialog::new(
-        Some(window),
+        window,
         DialogFlags::MODAL,
         MessageType::Info,
         ButtonsType::YesNo,
         s,
     );
     dialog.set_keep_above(true);
-    let dialog_result = dialog.run();
+    let button_pressed = dialog.run();
     dialog.destroy();
-    dialog_result == ResponseType::Yes.into()
+    button_pressed == ResponseType::Yes.into()
 }
 
-fn get_file_path(window: &gtk::Window, s: &str) -> Option<PathBuf> {
+fn error_window(window: Option<&gtk::Window>, s: &str) {
+    let dialog = MessageDialog::new(
+        window,
+        DialogFlags::MODAL,
+        MessageType::Error,
+        ButtonsType::Ok,
+        s,
+    );
+    dialog.set_keep_above(true);
+    dialog.run();
+    dialog.destroy();
+}
+
+fn choose_file(window: Option<&gtk::Window>, s: &str) -> Option<PathBuf> {
     let dialog = FileChooserDialog::with_buttons(
         Some(s),
-        Some(window),
+        window,
         FileChooserAction::Save,
         &[
             ("_Cancel", ResponseType::Cancel),
@@ -286,9 +304,13 @@ fn get_file_path(window: &gtk::Window, s: &str) -> Option<PathBuf> {
     dialog.set_filter(&filter);
     dialog.set_current_name("merged.dxf");
 
-    dialog.run();
+    let button_pressed = dialog.run();
     let path = dialog.get_filename();
     info!("Got {:?} from FileChooserDialog", path);
     dialog.destroy();
-    path
+    if button_pressed == ResponseType::Accept.into() {
+        path
+    } else {
+        None
+    }
 }

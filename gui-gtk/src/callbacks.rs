@@ -1,15 +1,21 @@
+use crate::error_window;
 use crate::global_stores::*;
 use crate::treeview_handle::store_insert;
 use gtk::{GtkListStoreExt, GtkListStoreExtManual};
 
 pub fn receive_from_todxf_button() -> glib::Continue {
     GLOBAL_FOR_TODXF_BUTTON.with(|global| {
-        if let Some((ref button, ref store, ref rx)) = *global.borrow() {
+        if let Some((ref button, ref store, ref window, ref rx)) = *global.borrow() {
             if let Ok(result) = rx.try_recv() {
-                if let Ok(rrxmls) = result {
+                if let (Ok(rrxmls), merged_result) = result {
                     store.clear();
                     for rrxml in rrxmls {
                         store_insert(&store, rrxml.to_str().unwrap());
+                    }
+                    if let Err(e) = merged_result {
+                        error_window(Some(window), &format!("Error while merging into {:?}", e));
+                    } else {
+                        info!("Merge succesful");
                     }
                 }
                 button.stop();

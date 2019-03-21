@@ -120,17 +120,12 @@ pub fn gui_run() {
         w.set_sensitive(false);
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
-        for rrxml_path in rrxml_paths {
-            let rrxml = match RrXml::from_file(rrxml_path.clone()) {
-                Ok(rr) => rr,
-                Err(_) => {error!("couldn't parse rrxml file: {:?}", rrxml_path); continue;},
-            };
-
+        let rrxmls = RrXmls::from_files(rrxml_paths);
+        for rrxml in rrxmls.rrxmls {
             let new_filepath = match rrxml.rename_file() {
                 Ok(path) => path,
-                Err(_) => {error!("error while renaming file: {:?}", rrxml_path); continue;},
+                Err(_) => {error!("error while renaming file: {:?}", rrxml.path); continue;},
             };
-
             store_insert(&rrxml_store, new_filepath.to_str().unwrap());
         }
         w.set_sensitive(true);

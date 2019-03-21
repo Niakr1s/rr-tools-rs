@@ -130,3 +130,26 @@ impl Rectangable for Contur {
         rect
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn rect_add_rect() {
+        let mut r = Rect::from(3., 3., -2., -2.).unwrap();
+        let other = Rect::from(4., 4., -3., -3.).unwrap();
+        r.add_rect(&other);
+        assert_eq!(r, other);
+
+        let mut r = Rect::from(3., 3., -2., -2.).unwrap();
+        let other = Rect::from(5., 4., -1., -0.).unwrap();
+        r.add_rect(&other);
+        assert_eq!(r, Rect::from(5., 4., -2., -2.).unwrap());
+
+        let mut r = Rect::from(3., 3., -2., -2.).unwrap();
+        let other = Rect::from(5., 4., -3., -4.).unwrap();
+        r.add_rect(&other);
+        assert_eq!(r, Rect::from(5., 4., -3., -4.).unwrap());
+    }
+}

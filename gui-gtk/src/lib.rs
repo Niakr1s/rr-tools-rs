@@ -24,10 +24,7 @@ use gdk::enums::key;
 use gdk::{Display, EventKey, ModifierType};
 
 use gtk::prelude::*;
-use gtk::{
-    Builder, Button, ButtonsType, Clipboard, Dialog, DialogFlags, DrawingArea, FileChooserAction,
-    FileChooserDialog, ListStore, MessageDialog, MessageType, ResponseType, TreeView,
-};
+use gtk::*;
 
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -287,7 +284,13 @@ fn get_file_path(window: &gtk::Window, s: &str) -> Option<PathBuf> {
         ],
     );
     dialog.set_keep_above(true);
-    let dialog_result = dialog.run();
+
+    let filter = FileFilter::new();
+    filter.add_pattern("*.dxf");
+    dialog.set_filter(&filter);
+    dialog.set_current_name("merged.dxf");
+
+    dialog.run();
     let path = dialog.get_filename();
     println!("{:?}", path);
     dialog.destroy();

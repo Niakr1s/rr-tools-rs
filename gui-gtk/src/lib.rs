@@ -9,23 +9,20 @@ extern crate url;
 
 extern crate rr_tools_lib;
 
-mod dialogs;
-mod macros;
-
 mod callbacks;
+mod dialogs;
 mod global_stores;
+mod macros;
 mod spinner_button;
 mod treeview_handle;
+mod utility;
 
 use rr_tools_lib::check_mydxf_in_rrxmls;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
-use gdk::enums::key;
-use gdk::{Display, EventKey, ModifierType};
-
 use gtk::prelude::*;
-use gtk::*;
+use gtk::{Builder, Button, Dialog, DrawingArea, ListStore, TreeView};
 
 use std::sync::mpsc;
 use std::thread;
@@ -35,6 +32,7 @@ use crate::dialogs::*;
 use crate::global_stores::*;
 use crate::spinner_button::SpinnerButton;
 use crate::treeview_handle::*;
+use crate::utility::*;
 
 pub fn gui_run() {
     if gtk::init().is_err() {
@@ -235,28 +233,4 @@ pub fn gui_run() {
     });
 
     gtk::main();
-}
-
-fn key_is_ctrl_c(key: &EventKey) -> bool {
-    let keyval = key.get_keyval();
-    let state = key.get_state();
-
-    (state == ModifierType::CONTROL_MASK
-        || state == (ModifierType::CONTROL_MASK | ModifierType::LOCK_MASK))
-        && (keyval == key::C
-            || keyval == key::c
-            || keyval == key::Cyrillic_es
-            || keyval == key::Cyrillic_ES)
-}
-
-fn results_to_clipboard(treeview: &TreeView, column: Option<i32>) {
-    let clipboard = Clipboard::get_default(&Display::get_default().unwrap()).unwrap();
-    let result = get_from_treeview_multiple(&treeview, column);
-    let to_clipboard = result
-        .iter()
-        .map(|x| x.to_str().unwrap())
-        .collect::<Vec<&str>>()
-        .join("\n");
-    clipboard.set_text(&to_clipboard);
-    info!("copied to clipboard:\n{}", to_clipboard);
 }

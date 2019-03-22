@@ -1,7 +1,7 @@
+use crate::treeview_handle::*;
 use gdk::enums::key;
 use gdk::{Display, EventKey, ModifierType};
-use gtk::{Clipboard, ClipboardExt, TreeView};
-use crate::treeview_handle::*;
+use gtk::{Clipboard, TreeView};
 
 pub(crate) fn key_is_ctrl_c(key: &EventKey) -> bool {
     let keyval = key.get_keyval();

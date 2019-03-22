@@ -13,6 +13,7 @@ mod callbacks;
 mod dialogs;
 mod global_stores;
 mod macros;
+mod message;
 mod spinner_button;
 mod treeview_handle;
 mod utility;
@@ -22,7 +23,7 @@ use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Dialog, DrawingArea, ListStore, TreeView};
+use gtk::{Builder, Button, Dialog, DrawingArea, ListStore, ResponseType, TreeView};
 
 use std::sync::mpsc;
 use std::thread;
@@ -30,6 +31,7 @@ use std::thread;
 use crate::callbacks::*;
 use crate::dialogs::*;
 use crate::global_stores::*;
+use crate::message::Message;
 use crate::spinner_button::SpinnerButton;
 use crate::treeview_handle::*;
 use crate::utility::*;
@@ -65,8 +67,18 @@ pub fn gui_run() {
         .expect("bad glade file");
     let about_button: Button = builder.get_object("about_button").expect("bad glade file");
     let drawing_area: DrawingArea = builder.get_object("drawing_area").expect("bad glade file");
-
     window.set_keep_above(true);
+
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    receiver.attach(None, move |msg| {
+        match msg {
+            Message::UpdateLabel(text) => println!("Got UpdateLabel: {}", text),
+            Message::Checked(parcels) => println!("Got checked parcels: {:?}", parcels),
+            _ => (),
+        }
+        glib::Continue(true)
+    });
 
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
@@ -95,9 +107,9 @@ pub fn gui_run() {
     }));
 
     about_dialog.connect_response(clone!(about_dialog => move |_, response| {
-        info!("about_dialog got response: {}", response);
+        info!("about_dialog got response: {:?}", response);
         // GTK_RESPONSE_DELETE_EVENT or GTK_RESPONSE_CANCEL
-        if response == -4 || response == -6 {
+        if response == ResponseType::DeleteEvent || response == ResponseType::Cancel {
             about_dialog.hide();
         }
     }));
@@ -129,6 +141,45 @@ pub fn gui_run() {
         }
         w.set_sensitive(true);
     }));
+
+    // todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window => move |_| {
+    //     info!("todxf_button clicked");
+    //     todxf_button.start();
+
+    //     let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+    //     info!("starting to convert to dxf: {:?}", rrxml_paths);
+
+    //     let (tx, rx) = mpsc::channel();
+
+    //     GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store, window => move |global| {
+    //         *global.borrow_mut() = Some((todxf_button, rrxml_store, window, rx))
+    //     }));
+
+    //     let merge_or = yes_or_no(Some(&window), "Merge into one dxf?");
+    //     let merged_path = if merge_or { choose_file(Some(&window), "Where to merge dxfs?")} else {None};
+
+    //     thread::spawn(move || {
+    //         let mut succesful = vec![];
+    //         let rrxmls = RrXmls::from_files(rrxml_paths);
+    //         for rrxml in &rrxmls.rrxmls {
+    //             match rrxml.save_to_dxf() {
+    //                 Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml.path); succesful.push(rrxml.path.clone())},
+    //                 Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
+    //             };
+    //         }
+    //         let merged_result = match merged_path {
+    //             Some(p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
+    //                 error!("error while merging to {:?}", p);
+    //                 Err(p)
+    //             } else {
+    //                 Ok(())
+    //             },
+    //             None => Ok(()),
+    //         };
+    //         tx.send((Ok(succesful),merged_result)).unwrap();
+    //         glib::idle_add(receive_from_todxf_button);
+    //     });
+    // }));
 
     todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window => move |_| {
         info!("todxf_button clicked");

@@ -3,12 +3,16 @@ name = "rr-tools-rs"
 version = "0.1.0"
 authors = ["'Niakr1s' <'pavel2188@gmail.com'>"]
 edition = "2018"
+build = "build.rs"
 
 [dependencies]
 log = "^0.4"
 pretty_env_logger = "^0.3"
 rr-tools-lib = { path = "rr-tools-lib", version = "0.1.0" }
 gui-gtk = { path = "gui-gtk", version = "0.1.0"}
+
+[build-dependencies]
+winres = "^0.1"
 
 [workspace]
 members = [

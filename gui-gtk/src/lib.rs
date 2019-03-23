@@ -25,7 +25,7 @@ use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Dialog, AboutDialog, DrawingArea, Label, ListStore, ResponseType, TreeView, AboutDialogExt, LabelExt, LinkButtonExt};
+use gtk::{Builder, Button, AboutDialog, DrawingArea, Label, ListStore, ResponseType, TreeView};
 
 use std::thread;
 
@@ -155,7 +155,7 @@ pub fn gui_run() {
             };
             store_insert(&rrxml_store, new_filepath.to_str().unwrap());
         }
-        sender.send(Message::UpdateLabel("Succesfully renamed all".to_owned())).unwrap();
+        sender.send(Message::UpdateLabel("Успешно переименовал xml файлы".to_owned())).unwrap();
         w.set_sensitive(true);
     }));
 
@@ -166,29 +166,29 @@ pub fn gui_run() {
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         info!("starting to convert to dxf: {:?}", rrxml_paths);
 
-        let merge_or = yes_or_no(Some(&window), "Merge into one dxf?");
-        let merged_path = if merge_or { choose_file(Some(&window), "Where to merge dxfs?")} else {None};
+        let merge_or = yes_or_no(Some(&window), "Объединить в один dxf?");
+        let merged_path = if merge_or { choose_file(Some(&window), "Укажите путь для объединенного dxf?")} else {None};
 
         thread::spawn(clone!(sender => move || {
             let mut succesful = vec![];
             let rrxmls = RrXmls::from_files(rrxml_paths);
             for rrxml in &rrxmls.rrxmls {
-                sender.send(Message::UpdateLabel(format!("Saving {} to dxf", rrxml.path.to_str().unwrap()))).unwrap();
+                sender.send(Message::UpdateLabel(format!("Конвертирую {} в dxf", rrxml.path.to_str().unwrap()))).unwrap();
                 match rrxml.save_to_dxf() {
                     Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml.path); succesful.push(rrxml.path.clone())},
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
                 };
             }
-            sender.send(Message::UpdateLabel("Succesfully converted all to dxf".to_owned())).unwrap();
+            sender.send(Message::UpdateLabel("Успешно сконвертировал xml файлы в dxf".to_owned())).unwrap();
             let merged = match merged_path {
                 Some(ref p) => {
-                    sender.send(Message::UpdateLabel(format!("Merging all to {}", p.to_str().unwrap()))).unwrap();
+                    sender.send(Message::UpdateLabel(format!("Объединяю в один dxf {}", p.to_str().unwrap()))).unwrap();
                     if rrxmls.save_to_dxf(p.clone()).is_err() {
                         error!("error while merging to {:?}", p);
-                        sender.send(Message::UpdateLabel(format!("Error while merging all to {}", p.to_str().unwrap()))).unwrap();
+                        sender.send(Message::UpdateLabel(format!("Не удалось объединить в {}", p.to_str().unwrap()))).unwrap();
                         Some(Err(p.to_owned()))
                     } else {
-                        sender.send(Message::UpdateLabel(format!("Succesfully merged all to {}", p.to_str().unwrap()))).unwrap();
+                        sender.send(Message::UpdateLabel(format!("Успешно объединил в {}", p.to_str().unwrap()))).unwrap();
                         Some(Ok(p.to_owned()))
                     }
                 },
@@ -209,7 +209,7 @@ pub fn gui_run() {
                 None => return,
             };
             info!("starting check: {:?}", mydxf_path);
-            result_treeview.get_column(0).unwrap().set_title(&format!("result for {}", mydxf_path.file_name().unwrap().to_str().unwrap()));
+            result_treeview.get_column(0).unwrap().set_title(&format!("{}", mydxf_path.file_name().unwrap().to_str().unwrap()));
 
             let mydxf = match MyDxf::from_file(mydxf_path.clone()) {
                     Ok(file) => file,
@@ -228,12 +228,12 @@ pub fn gui_run() {
                 }
                 let mut parcels = vec![];
                 for rrxml in rrxmls {
-                    sender.send(Message::UpdateLabel(format!("Checking in {}", rrxml.path.to_str().unwrap()))).unwrap();
+                    sender.send(Message::UpdateLabel(format!("Проверяю в {}", rrxml.path.to_str().unwrap()))).unwrap();
                     if let Some(ref mut parcel) = check_mydxf_in_rrxml(&mydxf, &rrxml) {
                         parcels.append(parcel);
                     }
                 }
-                sender.send(Message::UpdateLabel(format!("Found {} results for {}", parcels.len(), mydxf.path.to_str().unwrap()))).unwrap();
+                sender.send(Message::UpdateLabel(format!("Нашёл {} результата для {}", parcels.len(), mydxf.path.to_str().unwrap()))).unwrap();
                 sender.send(Message::CheckCompleted(parcels)).unwrap();
             }));
         }),
@@ -301,7 +301,7 @@ pub fn gui_run() {
                         if let Err(e) = res {
                             error_window(
                                 Some(&window),
-                                &format!("Error while merging into {:?}", e),
+                                &format!("Не удалось объединить в один dxf. Возможно, \n{}\nоткрыт в другой программе.", e.to_str().unwrap()),
                             );
                         } else {
                             info!("Merge succesful");

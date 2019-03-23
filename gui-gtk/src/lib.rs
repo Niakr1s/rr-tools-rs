@@ -21,7 +21,7 @@ use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Dialog, DrawingArea, ListStore, ResponseType, TreeView};
+use gtk::{Builder, Button, Dialog, DrawingArea, Label, ListStore, ResponseType, TreeView};
 
 use std::thread;
 
@@ -39,17 +39,42 @@ pub fn gui_run() {
 
     let glade_src = include_str!(r"glade\rr-tools-rs.glade");
     let builder = Builder::new_from_string(glade_src);
-    let window: gtk::Window = builder.get_object("main_window").expect("bad glade file");
+    let window: gtk::Window = builder
+        .get_object("main_window")
+        .expect("no main_window in glade file");
 
-    let about_dialog: Dialog = builder.get_object("about_dialog").expect("bad glade file");
+    let about_dialog: Dialog = builder
+        .get_object("about_dialog")
+        .expect("no about_dialog in glade file");
 
-    let rrxml_treeview: TreeView = builder.get_object("rrxml_view").expect("bad glade file");
-    let rrxml_store: ListStore = builder.get_object("rrxml_store").expect("bad glade file");
-    let mydxf_treeview: TreeView = builder.get_object("mydxf_view").expect("bad glade file");
-    let mydxf_store: ListStore = builder.get_object("mydxf_store").expect("bad glade file");
-    let result_treeview: TreeView = builder.get_object("result_view").expect("bad glade file");
-    let result_store: ListStore = builder.get_object("result_store").expect("bad glade file");
+    let rrxml_treeview: TreeView = builder.get_object("rrxml_view").expect("no  in glade file");
+    let rrxml_store: ListStore = builder
+        .get_object("rrxml_store")
+        .expect("no rrxml_store in glade file");
+    let mydxf_treeview: TreeView = builder.get_object("mydxf_view").expect("no  in glade file");
+    let mydxf_store: ListStore = builder
+        .get_object("mydxf_store")
+        .expect("no mydxf_store in glade file");
+    let result_treeview: TreeView = builder
+        .get_object("result_view")
+        .expect("no result_view in glade file");
+    let result_store: ListStore = builder
+        .get_object("result_store")
+        .expect("no result_store in glade file");
+    let clipboard_button: Button = builder
+        .get_object("clipboard_button")
+        .expect("no clipboard_button in glade file");
+    let about_button: Button = builder
+        .get_object("about_button")
+        .expect("no about_button in glade file");
+    let drawing_area: DrawingArea = builder
+        .get_object("drawing_area")
+        .expect("no drawing_area in glade file");
+    let status_label: Label = builder
+        .get_object("status_label")
+        .expect("no status_label in glade file");
 
+    // SpinnerButtons
     let rename_button = SpinnerButton::new(&builder, "rename_button", "rename_button_spinner");
     let check_button = SpinnerButton::new(&builder, "check_button", "check_button_spinner");
     let todxf_button = SpinnerButton::new(&builder, "todxf_button", "todxf_button_spinner");
@@ -57,11 +82,7 @@ pub fn gui_run() {
         SpinnerButton::new(&builder, "rrxml_clear_button", "rrxml_clear_button_spinner");
     let mydxf_clear_button =
         SpinnerButton::new(&builder, "mydxf_clear_button", "mydxf_clear_button_spinner");
-    let clipboard_button: Button = builder
-        .get_object("clipboard_button")
-        .expect("bad glade file");
-    let about_button: Button = builder.get_object("about_button").expect("bad glade file");
-    let drawing_area: DrawingArea = builder.get_object("drawing_area").expect("bad glade file");
+
     window.set_keep_above(true);
 
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);

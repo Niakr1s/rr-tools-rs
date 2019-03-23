@@ -612,8 +612,21 @@ THE SOFTWARE.
           </packing>
         </child>
         <child>
-          <object class="GtkExpander">
+          <object class="GtkLabel" id="status_label">
             <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_bottom">5</property>
+            <property name="label" translatable="yes">Ready</property>
+            <property name="xalign">0.0099999997764825821</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkExpander">
             <property name="can_focus">True</property>
             <child>
               <object class="GtkDrawingArea" id="drawing_area">
@@ -633,7 +646,7 @@ THE SOFTWARE.
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

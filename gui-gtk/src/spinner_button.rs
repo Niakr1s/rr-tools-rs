@@ -15,10 +15,10 @@ impl SpinnerButton {
     ) -> SpinnerButton {
         let button: Button = builder
             .get_object(button_glade_str)
-            .expect("bad glade file");
+            .unwrap_or_else(|| panic!("no {} in glade file", button_glade_str));
         let spinner: Spinner = builder
             .get_object(spinner_glade_str)
-            .expect("bad glade file");
+            .unwrap_or_else(|| panic!("no {} in glade file", spinner_glade_str));
         SpinnerButton { button, spinner }
     }
 

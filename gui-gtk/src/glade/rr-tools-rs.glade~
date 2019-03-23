@@ -52,13 +52,17 @@ THE SOFTWARE.
     <property name="resizable">False</property>
     <property name="icon_name">thunderbolt-symbolic</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel">
+        <property name="name">label</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">label</property>
+      </object>
     </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_bottom">5</property>
         <property name="orientation">vertical</property>
         <property name="spacing">5</property>
         <child>
@@ -616,7 +620,6 @@ THE SOFTWARE.
           <object class="GtkExpander">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="margin_left">10</property>
             <child>
               <object class="GtkDrawingArea" id="drawing_area">
                 <property name="height_request">500</property>

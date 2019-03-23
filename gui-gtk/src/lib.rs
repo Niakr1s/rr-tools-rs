@@ -144,9 +144,13 @@ pub fn gui_run() {
 
     rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store, sender => move |w| {
         info!("rename_button clicked");
-        w.set_sensitive(false);
+
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+        if (rrxml_paths.is_empty()) {return};
+
+        w.set_sensitive(false);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
+
         let rrxmls = RrXmls::from_files(rrxml_paths);
         for rrxml in rrxmls.rrxmls {
             let new_filepath = match rrxml.rename_file() {
@@ -161,9 +165,10 @@ pub fn gui_run() {
 
     todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window, sender => move |_| {
         info!("todxf_button clicked");
-        todxf_button.start();
-
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+        if (rrxml_paths.is_empty()) {return};
+
+        todxf_button.start();
         info!("starting to convert to dxf: {:?}", rrxml_paths);
 
         let merge_or = yes_or_no(Some(&window), "Объединить в один dxf?");
@@ -201,13 +206,15 @@ pub fn gui_run() {
     check_button.connect_clicked(
         clone!(rrxml_treeview, mydxf_treeview, result_store, result_treeview, check_button, sender => move |_| {
             info!("check_button clicked");
-            result_store.clear();
 
             let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
+            if (rrxml_paths.is_empty()) {return};
             let mydxf_path = match get_from_treeview_single(&mydxf_treeview, None) {
                 Some(path) => path,
                 None => return,
             };
+            
+            result_store.clear();
             info!("starting check: {:?}", mydxf_path);
             result_treeview.get_column(0).unwrap().set_title(&format!("{}", mydxf_path.file_name().unwrap().to_str().unwrap()));
 

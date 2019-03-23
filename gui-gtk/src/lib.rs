@@ -233,7 +233,7 @@ pub fn gui_run() {
                         parcels.append(parcel);
                     }
                 }
-                sender.send(Message::UpdateLabel(format!("Нашёл {} результата для {}", parcels.len(), mydxf.path.to_str().unwrap()))).unwrap();
+                sender.send(Message::UpdateLabel(format!("Нашёл вхождений: {} шт для {}", parcels.len(), mydxf.path.to_str().unwrap()))).unwrap();
                 sender.send(Message::CheckCompleted(parcels)).unwrap();
             }));
         }),

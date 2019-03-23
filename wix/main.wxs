@@ -41,6 +41,24 @@
     <Property Id='DiskPrompt' Value='Rosreestr Tools Installation'/>
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id="DesktopFolder" Name="Desktop">
+        <Component Id="ApplicationShortcutDesktop" Guid="*">
+            <Shortcut Id="ApplicationDesktopShortcut"
+                Name="Rosreestr Tools"
+                Description="Comment field in your shortcut"
+                Target="[APPLICATIONFOLDER]/bin/rr-tools-rs.exe"
+                WorkingDirectory="APPLICATIONFOLDER"/>
+            <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+            <RegistryValue
+                Root="HKCU"
+                Key="Software/rr-tools-rs"
+                Name="installed"
+                Type="integer"
+                Value="1"
+                KeyPath="yes"/>
+        </Component>
+    </Directory>
+      
       <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
         <Directory Id='APPLICATIONFOLDER' Name='rr-tools-rs'>
 
@@ -71,6 +89,9 @@
             <Component Id='rr_tools_rsBinary' Guid='*' Win64='$(var.Win64)'>
               <File Id='rr_tools_rsEXE' Name='rr-tools-rs.exe' DiskId='1' Source='target\release\rr-tools-rs.exe' KeyPath='yes'/>
             </Component>
+            <Component Id='libglib' Guid='*' Win64='$(var.Win64)'>
+              <File Id='libglib' Name='libglib-2.0-0.dll' DiskId='1' Source='wix\libglib-2.0-0.dll' KeyPath='yes'/>
+            </Component>
           </Directory>
         </Directory>
       </Directory>
@@ -85,6 +106,8 @@
       <ComponentRef Id='License'/>
 
       <ComponentRef Id='rr_tools_rsBinary'/>
+      <ComponentRef Id='libglib'/>
+      <ComponentRef Id='ApplicationShortcutDesktop'/>
       <Feature Id='Environment' Title='PATH Environment Variable' Description='Add the install location of the [ProductName] executable to the PATH system environment variable. This allows the [ProductName] executable to be called from any location.' Level='1' Absent='allow'>
         <ComponentRef Id='Path'/>
       </Feature>

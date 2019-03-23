@@ -240,7 +240,7 @@ pub fn gui_run() {
     }));
 
     check_button.connect_clicked(
-        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button, sender => move |_| {
+        clone!(rrxml_treeview, mydxf_treeview, result_store, result_treeview, check_button, sender => move |_| {
             info!("check_button clicked");
             result_store.clear();
 
@@ -250,6 +250,7 @@ pub fn gui_run() {
                 None => return,
             };
             info!("starting check: {:?}", mydxf_path);
+            result_treeview.get_column(0).unwrap().set_title(&format!("result for {}", mydxf_path.file_name().unwrap().to_str().unwrap()));
 
             let mydxf = match MyDxf::from_file(mydxf_path.clone()) {
                     Ok(file) => file,

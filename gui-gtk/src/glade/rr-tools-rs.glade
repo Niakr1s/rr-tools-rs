@@ -665,6 +665,7 @@ THE SOFTWARE.
     <property name="version">0.1.0</property>
     <property name="copyright" translatable="yes">Niakr1s</property>
     <property name="website">https://github.com/Niakr1s/rr-tools-rs</property>
+    <property name="website_label" translatable="yes">https://github.com/Niakr1s/rr-tools-rs</property>
     <property name="authors">Niakr1s &lt;pavel2188@gmail.com&gt;</property>
     <property name="logo_icon_name">thunderbolt-symbolic</property>
     <property name="license_type">mit-x11</property>

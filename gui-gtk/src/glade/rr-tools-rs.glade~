@@ -509,6 +509,7 @@ THE SOFTWARE.
                         <property name="width_request">200</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">здесь показывается результат проверки вхождений dxf файла во всех xml файлах</property>
                         <property name="model">result_store</property>
                         <property name="search_column">0</property>
                         <property name="rubber_banding">True</property>

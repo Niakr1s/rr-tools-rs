@@ -31,3 +31,10 @@ macro_rules! upgrade_weak {
         upgrade_weak!($x, ())
     };
 }
+
+#[macro_export]
+macro_rules! clone_all {
+    ($($a:ident),+) => {
+        $(let $a = $a.clone();)+
+    };
+}

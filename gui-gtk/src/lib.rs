@@ -9,9 +9,7 @@ extern crate url;
 
 extern crate rr_tools_lib;
 
-mod callbacks;
 mod dialogs;
-mod global_stores;
 mod macros;
 mod message;
 mod spinner_button;
@@ -25,13 +23,10 @@ use rr_tools_lib::rrxml::{RrXml, RrXmls};
 use gtk::prelude::*;
 use gtk::{Builder, Button, Dialog, DrawingArea, ListStore, ResponseType, TreeView};
 
-use std::sync::mpsc;
 use std::thread;
 
-use crate::callbacks::*;
 use crate::dialogs::*;
-use crate::global_stores::*;
-use crate::message::Message;
+use crate::message::*;
 use crate::spinner_button::SpinnerButton;
 use crate::treeview_handle::*;
 use crate::utility::*;
@@ -71,14 +66,55 @@ pub fn gui_run() {
 
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    receiver.attach(None, move |msg| {
-        match msg {
-            Message::UpdateLabel(text) => println!("Got UpdateLabel: {}", text),
-            Message::Checked(parcels) => println!("Got checked parcels: {:?}", parcels),
-            _ => (),
-        }
-        glib::Continue(true)
-    });
+    // glib channel loop
+    {
+        clone_all!(
+            window,
+            rrxml_store,
+            todxf_button,
+            result_store,
+            check_button
+        );
+        receiver.attach(None, move |msg| {
+            match msg {
+                Message::UpdateLabel(text) => println!("Got UpdateLabel: {}", text),
+                Message::CheckCompleted(parcels) => {
+                    check_button.stop();
+                    result_store.clear();
+                    if let Some(parcels) = parcels {
+                        info!("succesfully checked mydxf: got {} parcels", parcels.len());
+                        for parcel in parcels {
+                            result_store.insert_with_values(
+                                None,
+                                &[0, 1],
+                                &[&parcel.typ, &parcel.number],
+                            );
+                        }
+                    } else {
+                        info!("succesfully checked mydxf: got none parcels");
+                    }
+                }
+                Message::ToDxfCompleted(rrxmls, merged) => {
+                    todxf_button.stop();
+                    rrxml_store.clear();
+                    for rrxml in rrxmls {
+                        store_insert(&rrxml_store, rrxml.to_str().unwrap());
+                    }
+                    if let Some(res) = merged {
+                        if let Err(e) = res {
+                            error_window(
+                                Some(&window),
+                                &format!("Error while merging into {:?}", e),
+                            );
+                        } else {
+                            info!("Merge succesful");
+                        }
+                    }
+                }
+            }
+            glib::Continue(true)
+        });
+    }
 
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
@@ -142,62 +178,17 @@ pub fn gui_run() {
         w.set_sensitive(true);
     }));
 
-    // todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window => move |_| {
-    //     info!("todxf_button clicked");
-    //     todxf_button.start();
-
-    //     let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
-    //     info!("starting to convert to dxf: {:?}", rrxml_paths);
-
-    //     let (tx, rx) = mpsc::channel();
-
-    //     GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store, window => move |global| {
-    //         *global.borrow_mut() = Some((todxf_button, rrxml_store, window, rx))
-    //     }));
-
-    //     let merge_or = yes_or_no(Some(&window), "Merge into one dxf?");
-    //     let merged_path = if merge_or { choose_file(Some(&window), "Where to merge dxfs?")} else {None};
-
-    //     thread::spawn(move || {
-    //         let mut succesful = vec![];
-    //         let rrxmls = RrXmls::from_files(rrxml_paths);
-    //         for rrxml in &rrxmls.rrxmls {
-    //             match rrxml.save_to_dxf() {
-    //                 Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml.path); succesful.push(rrxml.path.clone())},
-    //                 Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
-    //             };
-    //         }
-    //         let merged_result = match merged_path {
-    //             Some(p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
-    //                 error!("error while merging to {:?}", p);
-    //                 Err(p)
-    //             } else {
-    //                 Ok(())
-    //             },
-    //             None => Ok(()),
-    //         };
-    //         tx.send((Ok(succesful),merged_result)).unwrap();
-    //         glib::idle_add(receive_from_todxf_button);
-    //     });
-    // }));
-
-    todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window => move |_| {
+    todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window, sender => move |_| {
         info!("todxf_button clicked");
         todxf_button.start();
 
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
         info!("starting to convert to dxf: {:?}", rrxml_paths);
 
-        let (tx, rx) = mpsc::channel();
-
-        GLOBAL_FOR_TODXF_BUTTON.with(clone!(todxf_button, rrxml_store, window => move |global| {
-            *global.borrow_mut() = Some((todxf_button, rrxml_store, window, rx))
-        }));
-
         let merge_or = yes_or_no(Some(&window), "Merge into one dxf?");
         let merged_path = if merge_or { choose_file(Some(&window), "Where to merge dxfs?")} else {None};
 
-        thread::spawn(move || {
+        thread::spawn(clone!(sender => move || {
             let mut succesful = vec![];
             let rrxmls = RrXmls::from_files(rrxml_paths);
             for rrxml in &rrxmls.rrxmls {
@@ -206,26 +197,24 @@ pub fn gui_run() {
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
                 };
             }
-            let merged_result = match merged_path {
-                Some(p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
+            let merged = match merged_path {
+                Some(ref p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
                     error!("error while merging to {:?}", p);
-                    Err(p)
+                    Some(Err(p.to_owned()))
                 } else {
-                    Ok(())
+                    Some(Ok(p.to_owned()))
                 },
-                None => Ok(()),
+                None => None,
             };
-            tx.send((Ok(succesful),merged_result)).unwrap();
-            glib::idle_add(receive_from_todxf_button);
-        });
+            sender.send(Message::ToDxfCompleted(succesful,merged)).unwrap();
+        }));
     }));
 
     check_button.connect_clicked(
-        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button => move |_| {
+        clone!(rrxml_treeview, mydxf_treeview, result_store, check_button, sender => move |_| {
             info!("check_button clicked");
             result_store.clear();
 
-            // let rrxml_paths = get_from_treeview_multiple(&rrxml_treeview);
             let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
             let mydxf_path = match get_from_treeview_single(&mydxf_treeview, None) {
                 Some(path) => path,
@@ -240,11 +229,7 @@ pub fn gui_run() {
 
             check_button.start();
 
-            let (tx, rx) = mpsc::channel();
-            GLOBAL_FOR_CHECK_BUTTON.with(clone!(check_button, result_store => move |global| {
-                *global.borrow_mut() = Some((check_button, result_store, rx))
-            }));
-            thread::spawn(move || {
+            thread::spawn(clone!(sender => move || {
                 let mut rrxmls = vec![];
                 for rrxml in rrxml_paths {
                         match RrXml::from_file(rrxml.clone()) {
@@ -253,9 +238,8 @@ pub fn gui_run() {
                     }
                 }
                 let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
-                tx.send(parcels).unwrap();
-                glib::idle_add(receive_from_check_button);
-            });
+                sender.send(Message::CheckCompleted(parcels)).unwrap();
+            }));
         }),
     );
 

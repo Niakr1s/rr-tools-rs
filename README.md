@@ -10,4 +10,4 @@
 
 Программе необходимы библиотеки gtk3-runtime, их можно скачать, например, [**отсюда**](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases).
 
-### Скачать программу можно из раздела [**релизов**](https://github.com/Niakr1s/rr-tools-rs/releases)
+Скачать программу можно из раздела [**релизов**](https://github.com/Niakr1s/rr-tools-rs/releases)

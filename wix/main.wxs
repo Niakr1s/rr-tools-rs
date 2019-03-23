@@ -79,9 +79,6 @@
             <Component Id='rr_tools_rsBinary' Guid='*' Win64='$(var.Win64)'>
               <File Id='rr_tools_rsEXE' Name='rr-tools-rs.exe' DiskId='1' Source='target\release\rr-tools-rs.exe' KeyPath='yes'/>
             </Component>
-            <Component Id='libglib' Guid='*' Win64='$(var.Win64)'>
-              <File Id='libglib' Name='libglib-2.0-0.dll' DiskId='1' Source='wix\libglib-2.0-0.dll' KeyPath='yes'/>
-            </Component>
           </Directory>
         </Directory>
       </Directory>
@@ -96,7 +93,6 @@
       <ComponentRef Id='License'/>
 
       <ComponentRef Id='rr_tools_rsBinary'/>
-      <ComponentRef Id='libglib'/>
       <ComponentRef Id='ApplicationShortcutDesktop'/>
       <Feature Id='Environment' Title='PATH Environment Variable' Description='Add the install location of the [ProductName] executable to the PATH system environment variable. This allows the [ProductName] executable to be called from any location.' Level='1' Absent='allow'>
         <ComponentRef Id='Path'/>
@@ -112,7 +108,7 @@
           The product icon is the graphic that appears in the Add/Remove
           Programs control panel for the application.
         -->
-    <Icon Id='ProductICO' SourceFile='gui-gtk\src\glade\rt.ico'/>
+    <Icon Id='ProductICO' SourceFile='rt.ico'/>
     <Property Id='ARPPRODUCTICON' Value='ProductICO' />
 
 

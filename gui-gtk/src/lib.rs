@@ -146,7 +146,7 @@ pub fn gui_run() {
         info!("rename_button clicked");
 
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
-        if (rrxml_paths.is_empty()) {return};
+        if rrxml_paths.is_empty() {return};
 
         w.set_sensitive(false);
         rrxml_store.clear();  // couldn't find better solution, this impl seems so stupid =\
@@ -166,7 +166,7 @@ pub fn gui_run() {
     todxf_button.connect_clicked(clone!(todxf_button, rrxml_treeview, window, sender => move |_| {
         info!("todxf_button clicked");
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
-        if (rrxml_paths.is_empty()) {return};
+        if rrxml_paths.is_empty() {return};
 
         todxf_button.start();
         info!("starting to convert to dxf: {:?}", rrxml_paths);
@@ -208,7 +208,7 @@ pub fn gui_run() {
             info!("check_button clicked");
 
             let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
-            if (rrxml_paths.is_empty()) {return};
+            if rrxml_paths.is_empty() {return};
             let mydxf_path = match get_from_treeview_single(&mydxf_treeview, None) {
                 Some(path) => path,
                 None => return,

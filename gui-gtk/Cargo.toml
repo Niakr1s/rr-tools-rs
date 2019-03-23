@@ -5,11 +5,12 @@ authors = ["Niakr1s <pavel2188@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-url = "1.7.2"
+url = "^1.7"
 glib = "^0.7"
 pretty_env_logger = "^0.3"
 log = "^0.4"
 rr-tools-lib = {version = "0.1.0", path = "../rr-tools-lib"}
+url_open = { path = "../url_open", version = "0.0.1"}
 
 [dependencies.gtk]
 version = "^0.6"

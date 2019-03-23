@@ -5,7 +5,11 @@ extern crate pretty_env_logger;
 extern crate gdk;
 extern crate glib;
 extern crate gtk;
+
 extern crate url;
+extern crate url_open;
+use url::Url;
+use url_open::UrlOpen;
 
 extern crate rr_tools_lib;
 
@@ -21,7 +25,7 @@ use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
 use gtk::prelude::*;
-use gtk::{Builder, Button, Dialog, DrawingArea, Label, ListStore, ResponseType, TreeView};
+use gtk::{Builder, Button, Dialog, AboutDialog, DrawingArea, Label, ListStore, ResponseType, TreeView, AboutDialogExt, LabelExt, LinkButtonExt};
 
 use std::thread;
 
@@ -43,7 +47,7 @@ pub fn gui_run() {
         .get_object("main_window")
         .expect("no main_window in glade file");
 
-    let about_dialog: Dialog = builder
+    let about_dialog: AboutDialog = builder
         .get_object("about_dialog")
         .expect("no about_dialog in glade file");
 
@@ -87,61 +91,16 @@ pub fn gui_run() {
 
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    // glib channel loop
-    {
-        clone_all!(
-            window,
-            status_label,
-            rrxml_store,
-            todxf_button,
-            result_store,
-            check_button
-        );
-        receiver.attach(None, move |msg| {
-            match msg {
-                Message::UpdateLabel(text) => {
-                    status_label.set_text(&text);
-                    println!("Got UpdateLabel: {}", text)
-                }
-                Message::CheckCompleted(parcels) => {
-                    check_button.stop();
-                    result_store.clear();
-                    info!("succesfully checked mydxf: got {} parcels", parcels.len());
-                    for parcel in parcels {
-                        result_store.insert_with_values(
-                            None,
-                            &[0, 1],
-                            &[&parcel.typ, &parcel.number],
-                        );
-                    }
-                }
-                Message::ToDxfCompleted(rrxmls, merged) => {
-                    todxf_button.stop();
-                    rrxml_store.clear();
-                    for rrxml in rrxmls {
-                        store_insert(&rrxml_store, rrxml.to_str().unwrap());
-                    }
-                    if let Some(res) = merged {
-                        if let Err(e) = res {
-                            error_window(
-                                Some(&window),
-                                &format!("Error while merging into {:?}", e),
-                            );
-                        } else {
-                            info!("Merge succesful");
-                        }
-                    }
-                }
-            }
-            glib::Continue(true)
-        });
-    }
-
     treeview_connect_with_drag_data_filtered(&rrxml_treeview, &rrxml_store, "xml");
     treeview_connect_with_drag_data_filtered(&mydxf_treeview, &mydxf_store, "dxf");
 
     treeview_connect_key_press(&rrxml_treeview, &rrxml_store);
     treeview_connect_key_press(&mydxf_treeview, &mydxf_store);
+
+    about_dialog.connect_activate_link(|_, link| {
+        Url::parse(link).unwrap().open();
+        Inhibit(true)
+    });
 
     drawing_area.connect_draw(clone!(drawing_area => move |_, cr| {
         // todo
@@ -303,6 +262,56 @@ pub fn gui_run() {
         gtk::main_quit();
         Inhibit(false)
     });
+
+    // glib channel loop
+    {
+        clone_all!(
+            window,
+            status_label,
+            rrxml_store,
+            todxf_button,
+            result_store,
+            check_button
+        );
+        receiver.attach(None, move |msg| {
+            match msg {
+                Message::UpdateLabel(text) => {
+                    status_label.set_text(&text);
+                    println!("Got UpdateLabel: {}", text)
+                }
+                Message::CheckCompleted(parcels) => {
+                    check_button.stop();
+                    result_store.clear();
+                    info!("succesfully checked mydxf: got {} parcels", parcels.len());
+                    for parcel in parcels {
+                        result_store.insert_with_values(
+                            None,
+                            &[0, 1],
+                            &[&parcel.typ, &parcel.number],
+                        );
+                    }
+                }
+                Message::ToDxfCompleted(rrxmls, merged) => {
+                    todxf_button.stop();
+                    rrxml_store.clear();
+                    for rrxml in rrxmls {
+                        store_insert(&rrxml_store, rrxml.to_str().unwrap());
+                    }
+                    if let Some(res) = merged {
+                        if let Err(e) = res {
+                            error_window(
+                                Some(&window),
+                                &format!("Error while merging into {:?}", e),
+                            );
+                        } else {
+                            info!("Merge succesful");
+                        }
+                    }
+                }
+            }
+            glib::Continue(true)
+        });
+    }
 
     gtk::main();
 }

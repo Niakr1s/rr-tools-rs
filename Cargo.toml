@@ -12,5 +12,5 @@ gui-gtk = { path = "gui-gtk", version = "0.1.0"}
 
 [workspace]
 members = [
-    "rr-tools-lib", "gui-gtk",
+    "rr-tools-lib", "gui-gtk"
 ]

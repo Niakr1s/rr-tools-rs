@@ -16,7 +16,7 @@ mod spinner_button;
 mod treeview_handle;
 mod utility;
 
-use rr_tools_lib::check_mydxf_in_rrxmls;
+use rr_tools_lib::check_mydxf_in_rrxml;
 use rr_tools_lib::mydxf::MyDxf;
 use rr_tools_lib::rrxml::{RrXml, RrXmls};
 
@@ -91,6 +91,7 @@ pub fn gui_run() {
     {
         clone_all!(
             window,
+            status_label,
             rrxml_store,
             todxf_button,
             result_store,
@@ -98,21 +99,20 @@ pub fn gui_run() {
         );
         receiver.attach(None, move |msg| {
             match msg {
-                Message::UpdateLabel(text) => println!("Got UpdateLabel: {}", text),
+                Message::UpdateLabel(text) => {
+                    status_label.set_text(&text);
+                    println!("Got UpdateLabel: {}", text)
+                }
                 Message::CheckCompleted(parcels) => {
                     check_button.stop();
                     result_store.clear();
-                    if let Some(parcels) = parcels {
-                        info!("succesfully checked mydxf: got {} parcels", parcels.len());
-                        for parcel in parcels {
-                            result_store.insert_with_values(
-                                None,
-                                &[0, 1],
-                                &[&parcel.typ, &parcel.number],
-                            );
-                        }
-                    } else {
-                        info!("succesfully checked mydxf: got none parcels");
+                    info!("succesfully checked mydxf: got {} parcels", parcels.len());
+                    for parcel in parcels {
+                        result_store.insert_with_values(
+                            None,
+                            &[0, 1],
+                            &[&parcel.typ, &parcel.number],
+                        );
                     }
                 }
                 Message::ToDxfCompleted(rrxmls, merged) => {
@@ -183,7 +183,7 @@ pub fn gui_run() {
         info!("mydxf store cleared");
     }));
 
-    rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store => move |w| {
+    rename_button.connect_clicked(clone!(rrxml_treeview, rrxml_store, sender => move |w| {
         info!("rename_button clicked");
         w.set_sensitive(false);
         let rrxml_paths = get_from_treeview_all(&rrxml_treeview, None);
@@ -196,6 +196,7 @@ pub fn gui_run() {
             };
             store_insert(&rrxml_store, new_filepath.to_str().unwrap());
         }
+        sender.send(Message::UpdateLabel("Succesfully renamed all".to_owned())).unwrap();
         w.set_sensitive(true);
     }));
 
@@ -213,17 +214,24 @@ pub fn gui_run() {
             let mut succesful = vec![];
             let rrxmls = RrXmls::from_files(rrxml_paths);
             for rrxml in &rrxmls.rrxmls {
+                sender.send(Message::UpdateLabel(format!("Saving {} to dxf", rrxml.path.to_str().unwrap()))).unwrap();
                 match rrxml.save_to_dxf() {
                     Ok(_) => {info!("succesfully converted to dxf: {:?}", rrxml.path); succesful.push(rrxml.path.clone())},
                     Err(_) => error!("error while converting to dxf: {:?}", rrxml.path),
                 };
             }
+            sender.send(Message::UpdateLabel("Succesfully converted all to dxf".to_owned())).unwrap();
             let merged = match merged_path {
-                Some(ref p) => if rrxmls.save_to_dxf(p.clone()).is_err() {
-                    error!("error while merging to {:?}", p);
-                    Some(Err(p.to_owned()))
-                } else {
-                    Some(Ok(p.to_owned()))
+                Some(ref p) => {
+                    sender.send(Message::UpdateLabel(format!("Merging all to {}", p.to_str().unwrap()))).unwrap();
+                    if rrxmls.save_to_dxf(p.clone()).is_err() {
+                        error!("error while merging to {:?}", p);
+                        sender.send(Message::UpdateLabel(format!("Error while merging all to {}", p.to_str().unwrap()))).unwrap();
+                        Some(Err(p.to_owned()))
+                    } else {
+                        sender.send(Message::UpdateLabel(format!("Succesfully merged all to {}", p.to_str().unwrap()))).unwrap();
+                        Some(Ok(p.to_owned()))
+                    }
                 },
                 None => None,
             };
@@ -258,7 +266,14 @@ pub fn gui_run() {
                             Err(_) => {error!("error while opening xml file: {:?}", rrxml)},
                     }
                 }
-                let parcels = check_mydxf_in_rrxmls(&mydxf, rrxmls);
+                let mut parcels = vec![];
+                for rrxml in rrxmls {
+                    sender.send(Message::UpdateLabel(format!("Checking in {}", rrxml.path.to_str().unwrap()))).unwrap();
+                    if let Some(ref mut parcel) = check_mydxf_in_rrxml(&mydxf, &rrxml) {
+                        parcels.append(parcel);
+                    }
+                }
+                sender.send(Message::UpdateLabel(format!("Found {} results for {}", parcels.len(), mydxf.path.to_str().unwrap()))).unwrap();
                 sender.send(Message::CheckCompleted(parcels)).unwrap();
             }));
         }),
